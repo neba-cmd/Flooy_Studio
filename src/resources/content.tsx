@@ -9,7 +9,7 @@ const person: Person = {
   avatar: "/images/FlooyLogo.png", // This could be your studio logo
   email: "flooystudio@gmail.com",
   location: "Europe/London",
-  ``
+  
 };
 
 const newsletter: Newsletter = {
