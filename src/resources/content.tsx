@@ -237,7 +237,7 @@ const gallery: Gallery = {
     { src: "/images/gallery/vertical-3.jpg", alt: "Production Still 8", orientation: "vertical" },
     
   ],
-    display: false,
+  
 };
 
 export { person, social, newsletter, home, about, blog, work, gallery };
