@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   AvatarGroup,
   Carousel,
@@ -18,7 +19,7 @@ interface ProjectCardProps {
   content: string;
   description: string;
   avatars: { src: string }[];
-  link: string;
+  link?: string;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -30,15 +31,25 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   avatars,
   link,
 }) => {
+  const imageCarousel = (
+    <Carousel
+      sizes="(max-width: 960px) 100vw, 960px"
+      items={images.map((image) => ({
+        slide: image,
+        alt: title,
+      }))}
+    />
+  );
+
   return (
     <Column fillWidth gap="m">
-      <Carousel
-        sizes="(max-width: 960px) 100vw, 960px"
-        items={images.map((image) => ({
-          slide: image,
-          alt: title,
-        }))}
-      />
+      {link?.trim() ? (
+        <Link href={link} target="_blank" rel="noopener noreferrer">
+          {imageCarousel}
+        </Link>
+      ) : (
+        imageCarousel
+      )}
       <Flex
         s={{ direction: "column" }}
         fillWidth
