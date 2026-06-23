@@ -41,7 +41,7 @@ const social: Social = [
 
 const home: Home = {
   path: "/",
-  image: "/images/og/home.jpg",
+  image: "/images/projects/FlooyStudio-project-01/FlooyYouTubeCover.png",
   label: "Home",
   title: `Flooy Studio | London Video Production & Digital Marketing`,
   description: `We are Flooy Studio, a premier creative production agency specializing in high-impact videography, photography, and social growth.`,
