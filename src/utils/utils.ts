@@ -20,7 +20,30 @@ type Metadata = {
   tag?: string;
   team: Team[];
   link?: string;
+  videoLink?: string;
 };
+
+function extractFirstVideoLink(content: string) {
+  const embedMatch = content.match(/src=["']([^"']*youtube\.com\/embed\/[^"']*)["']/i);
+  if (embedMatch?.[1]) {
+    const idMatch = embedMatch[1].match(/youtube\.com\/embed\/([^?&#"']+)/i);
+    if (idMatch?.[1]) {
+      return `https://www.youtube.com/watch?v=${idMatch[1]}`;
+    }
+    return embedMatch[1];
+  }
+
+  const shortLinkMatch = content.match(/src=["']([^"']*youtu\.be\/[^"']*)["']/i);
+  if (shortLinkMatch?.[1]) {
+    const idMatch = shortLinkMatch[1].match(/youtu\.be\/([^?&#"']+)/i);
+    if (idMatch?.[1]) {
+      return `https://www.youtube.com/watch?v=${idMatch[1]}`;
+    }
+    return shortLinkMatch[1];
+  }
+
+  return undefined;
+}
 
 import { notFound } from "next/navigation";
 
@@ -50,6 +73,7 @@ function readMDXFile(filePath: string) {
     tag: data.tag || [],
     team: data.team || [],
     link: data.link || "",
+    videoLink: data.videoLink || extractFirstVideoLink(content) || data.link || "",
   };
 
   return { metadata, content };

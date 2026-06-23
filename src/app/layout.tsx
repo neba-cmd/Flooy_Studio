@@ -45,6 +45,7 @@ export default async function RootLayout({
       )}
     >
       <head>
+        <link rel="icon" href="/images/FlooyLogo.png" />
         <script
           id="theme-init"
           dangerouslySetInnerHTML={{

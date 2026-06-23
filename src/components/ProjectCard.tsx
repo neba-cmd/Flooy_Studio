@@ -19,7 +19,7 @@ interface ProjectCardProps {
   content: string;
   description: string;
   avatars: { src: string }[];
-  link?: string;
+  videoLink?: string;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -29,7 +29,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   content,
   description,
   avatars,
-  link,
+  videoLink,
 }) => {
   const imageCarousel = (
     <Carousel
@@ -43,8 +43,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <Column fillWidth gap="m">
-      {link?.trim() ? (
-        <Link href={link} target="_blank" rel="noopener noreferrer">
+      {videoLink?.trim() ? (
+        <Link href={videoLink} target="_blank" rel="noopener noreferrer">
           {imageCarousel}
         </Link>
       ) : (
