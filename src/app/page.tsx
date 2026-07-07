@@ -54,7 +54,7 @@ export default function Home() {
             >
               <Badge
                 background="brand-alpha-weak"
-                paddingX="12"
+                paddingX="13"
                 paddingY="4"
                 onBackground="neutral-strong"
                 textVariant="label-default-s"
