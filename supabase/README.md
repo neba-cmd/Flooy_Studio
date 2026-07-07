@@ -27,7 +27,7 @@ After creating a Supabase Auth user, the app will create the matching
 Required deployment environment variables:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase anon or publishable key)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 The app does not require a service-role key for normal operation. Original
 photo downloads are protected by the `Paid clients can read original objects`

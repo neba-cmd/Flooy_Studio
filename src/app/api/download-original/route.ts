@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseConfig } from "@/lib/supabase/config";
 
 /**
  * This is the real security boundary for original-photo downloads.
@@ -14,11 +15,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing code or photoId" }, { status: 400 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false } }
-  );
+  const { url, key } = getSupabaseConfig();
+  const supabase = createClient(url, key, { auth: { persistSession: false } });
 
   const { data: rows, error: galleryError } = await supabase.rpc(
     "get_client_gallery_by_access_code",

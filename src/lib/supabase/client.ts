@@ -1,17 +1,11 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseConfig } from "./config";
 
 // Client-side Supabase client. Safe to use in "use client" components.
 // Uses the public anon key — RLS policies (see supabase/schema.sql)
 // control what it can actually read/write.
 export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const { url, key } = getSupabaseConfig();
 
-  if (!url || !anonKey) {
-    throw new Error(
-      "Supabase environment variables are not configured."
-    );
-  }
-
-  return createBrowserClient(url, anonKey);
+  return createBrowserClient(url, key);
 }
