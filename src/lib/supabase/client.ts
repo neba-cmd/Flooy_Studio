@@ -9,7 +9,7 @@ export function createClient() {
 
   if (!url || !anonKey) {
     throw new Error(
-      "Supabase environment variables are not configured. Replace the placeholder values in .env.local with your real Supabase URL and anon key."
+      "Supabase environment variables are not configured."
     );
   }
 

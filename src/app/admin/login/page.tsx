@@ -25,7 +25,7 @@ export default function LoginPage() {
       });
 
       if (signInError) {
-        setError("Incorrect email or password.");
+        setError(signInError.message || "Incorrect email or password.");
         return;
       }
 
