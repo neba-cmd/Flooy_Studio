@@ -10,5 +10,11 @@ export function getSupabaseConfig() {
     );
   }
 
+  if (url.endsWith(".supabase.com")) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL should end with .supabase.co, not .supabase.com. Copy the Project URL from Supabase Project Settings > API."
+    );
+  }
+
   return { url, key };
 }
