@@ -19,10 +19,12 @@ export default function EventPhotosPage() {
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
 
   async function lookup() {
     setLoading(true);
     setError(null);
+    setDownloadMessage(null);
     setPhotos([]);
     const normalizedCode = code.trim().toUpperCase();
     const supabase = createClient();
@@ -109,16 +111,29 @@ export default function EventPhotosPage() {
     }
 
     setDownloadingId(photoId);
+    setError(null);
+    setDownloadMessage(null);
+
     try {
       const supabase = createClient();
       const { data, error: signedError } = await supabase.storage
         .from("originals")
-        .createSignedUrl(photo.original_path, 300);
+        .createSignedUrl(photo.original_path, 300, {
+          download: true,
+        });
 
       if (signedError || !data?.signedUrl) {
         setError("Couldn't get download link. Please try again.");
       } else {
-        window.open(data.signedUrl, "_blank");
+        const link = document.createElement("a");
+        link.href = data.signedUrl;
+        link.download = "";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setDownloadMessage(
+          "Your download has started. Thank you for taking your pic with us."
+        );
       }
     } finally {
       setDownloadingId(null);
@@ -127,7 +142,12 @@ export default function EventPhotosPage() {
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.h1}>Find your photos</h1>
+      <section className={styles.header}>
+        <h1 className={styles.h1}>Download your event photos</h1>
+        <p className={styles.intro}>
+          Enter the access code you were given at the event. Once your gallery opens, tap Download under any photo to save the full-quality file.
+        </p>
+      </section>
 
       <div className={styles.row}>
         <input
@@ -138,17 +158,22 @@ export default function EventPhotosPage() {
           className={styles.input}
         />
         <button type="button" onClick={lookup} disabled={loading || !code.trim()} className={styles.button}>
-          {loading ? "Looking…" : "View"}
+          {loading ? "Looking…" : "Find photos"}
         </button>
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
+      {downloadMessage && <p className={styles.success}>{downloadMessage}</p>}
 
       {photos.length > 0 && (
         <>
-          {!paid && (
+          {paid ? (
+            <p className={styles.readyNotice}>
+              Your gallery is ready. Choose a photo and tap Download.
+            </p>
+          ) : (
             <p className={styles.notice}>
-              Previews only. Pay at the event desk to unlock full-resolution downloads.
+              These are previews. Please pay at the event desk to unlock full-resolution downloads.
             </p>
           )}
           <div className={styles.grid}>
@@ -170,7 +195,7 @@ export default function EventPhotosPage() {
                       disabled={downloadingId === p.photo_id}
                       className={styles.downloadBtn}
                     >
-                      {downloadingId === p.photo_id ? "…" : "Download"}
+                      {downloadingId === p.photo_id ? "Starting..." : "Download photo"}
                     </button>
                   ) : (
                     <div className={styles.lockedBtn}>Locked</div>

@@ -7,11 +7,23 @@
   background: #0a0a0a;
 }
 
+.header {
+  margin-bottom: 1.5rem;
+}
+
 .h1 {
-  font-size: 1.125rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  margin: 0 0 1.5rem;
+  letter-spacing: 0;
+  margin: 0 0 0.5rem;
+}
+
+.intro {
+  max-width: 36rem;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #c7c7c7;
 }
 
 .row {
@@ -58,6 +70,16 @@
   color: #f87171;
 }
 
+.success {
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(52, 211, 153, 0.12);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #6ee7b7;
+}
+
 .notice {
   margin-top: 1.5rem;
   border-radius: 8px;
@@ -66,6 +88,16 @@
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   color: #f5b942;
+}
+
+.readyNotice {
+  margin-top: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: rgba(52, 211, 153, 0.08);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #6ee7b7;
 }
 
 .grid {
@@ -102,20 +134,39 @@
   width: 100%;
   border: none;
   border-radius: 6px;
-  background: rgba(52, 211, 153, 0.15);
-  padding: 0.4rem 0;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #34d399;
+  background: #34d399;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #07130f;
   cursor: pointer;
+}
+
+.downloadBtn:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
 
 .lockedBtn {
   width: 100%;
   border-radius: 6px;
   background: #1a1a1a;
-  padding: 0.4rem 0;
+  padding: 0.6rem 0.5rem;
   text-align: center;
   font-size: 0.75rem;
   color: #8a8a8a;
+}
+
+@media (max-width: 520px) {
+  .main {
+    padding: 2rem 1rem;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
 }
