@@ -4,7 +4,7 @@ import { createBrowserClient } from "@supabase/ssr";
 // Uses the public anon key — RLS policies (see supabase/schema.sql)
 // control what it can actually read/write.
 export function createClient() {
-  const url = process.env.sb_secret_Z9Gxwp8gCO2E94llKA5ILQ_Yhus8aRS;
+  const url = process.env.https://qtpvtuqtmcvntlfvewcs.supabase.co;
   const anonKey = process.env.sb_secret_Z9Gxwp8gCO2E94llKA5ILQ_Yhus8aRS;
 
   if (!url || !anonKey) {
