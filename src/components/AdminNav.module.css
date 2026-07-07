@@ -1,0 +1,44 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #262626;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.links {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.linkActive {
+  font-weight: 600;
+  color: #f5b942;
+  text-decoration: none;
+}
+
+.linkInactive {
+  color: #8a8a8a;
+  text-decoration: none;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #8a8a8a;
+}
+
+.signOut {
+  background: none;
+  border: none;
+  color: #8a8a8a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+}
