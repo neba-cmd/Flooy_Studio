@@ -17,20 +17,30 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    setLoading(false);
+      if (signInError) {
+        setError("Incorrect email or password.");
+        return;
+      }
 
-    if (signInError) {
-      setError("Incorrect email or password.");
-      return;
+      router.replace("/admin");
+      router.refresh();
+    } catch (err) {
+      console.error("Admin sign-in failed:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to sign in right now. Please check your Supabase configuration."
+      );
+    } finally {
+      setLoading(false);
     }
-    router.replace("/admin");
-    router.refresh();
   }
 
   return (
@@ -38,8 +48,11 @@ export default function LoginPage() {
       <h1 className={styles.h1}>Photographer sign in</h1>
       <form onSubmit={handleLogin} className={styles.form}>
         <div>
-          <label className={styles.label}>Email</label>
+          <label htmlFor="admin-email" className={styles.label}>
+            Email
+          </label>
           <input
+            id="admin-email"
             type="email"
             required
             value={email}
@@ -48,8 +61,11 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label className={styles.label}>Password</label>
+          <label htmlFor="admin-password" className={styles.label}>
+            Password
+          </label>
           <input
+            id="admin-password"
             type="password"
             required
             value={password}

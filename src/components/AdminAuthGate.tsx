@@ -30,44 +30,74 @@ export function AdminAuthGate({
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
+    let isMounted = true;
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-      if (!user) {
-        router.replace("/admin/login");
-        setChecked(true);
-        return;
+        if (userError) {
+          console.error("Could not read admin session:", userError.message);
+        }
+
+        if (!user) {
+          if (isMounted) {
+            router.replace("/admin/login");
+            setChecked(true);
+          }
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .rpc("ensure_photographer_profile")
+          .single<PhotographerProfile>();
+
+        if (profileError) {
+          console.error("Could not create photographer profile:", profileError.message);
+        }
+
+        if (isMounted) {
+          setPhotographer({
+            id: user.id,
+            displayName: profile?.display_name ?? user.email ?? "Photographer",
+            isAdmin: profile?.is_admin ?? false,
+          });
+          setChecked(true);
+        }
+      } catch (err) {
+        console.error("Admin auth initialization failed:", err);
+        if (isMounted) {
+          setChecked(true);
+          setPhotographer(null);
+          router.replace("/admin/login");
+        }
       }
-
-      const { data: profile, error: profileError } = await supabase
-        .rpc("ensure_photographer_profile")
-        .single<PhotographerProfile>();
-
-      if (profileError) {
-        console.error("Could not create photographer profile:", profileError.message);
-      }
-
-      setPhotographer({
-        id: user.id,
-        displayName: profile?.display_name ?? user.email ?? "Photographer",
-        isAdmin: profile?.is_admin ?? false,
-      });
-      setChecked(true);
     }
 
     load();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") router.replace("/admin/login");
-    });
+    try {
+      const supabase = createClient();
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "SIGNED_OUT") router.replace("/admin/login");
+      });
 
-    return () => subscription.unsubscribe();
+      return () => {
+        isMounted = false;
+        subscription.unsubscribe();
+      };
+    } catch (err) {
+      console.error("Admin auth listener setup failed:", err);
+      return () => {
+        isMounted = false;
+      };
+    }
   }, [router]);
 
   if (!checked || !photographer) {
