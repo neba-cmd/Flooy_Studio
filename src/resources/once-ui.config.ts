@@ -8,10 +8,9 @@ import {
   RoutesConfig,
   SameAsConfig,
   SchemaConfig,
-  SocialSharingConfig,
   StyleConfig,
 } from "@/types";
-import { blog, home } from "./index";
+import { home } from "./content";
 
 // Used for SEO metadata and schema. Set NEXT_PUBLIC_SITE_URL in production.
 const baseURL: string = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -20,7 +19,6 @@ const routes: RoutesConfig = {
   "/": true,
   "/about": true,
   "/work": true,
-  "/blog": blog.display ?? true,
   "/gallery": true,
   "/admin": true,
   "/admin/login": true,
@@ -204,22 +202,6 @@ const sameAs: SameAsConfig = {
   discord: "https://discord.com/invite/5EyAQ4eNdS",
 };
 
-// social sharing configuration for blog posts
-const socialSharing: SocialSharingConfig = {
-  display: true,
-  platforms: {
-    x: true,
-    linkedin: true,
-    facebook: false,
-    pinterest: false,
-    whatsapp: false,
-    reddit: false,
-    telegram: false,
-    email: true,
-    copyLink: true,
-  },
-};
-
 export {
   display,
   mailchimp,
@@ -230,7 +212,6 @@ export {
   style,
   schema,
   sameAs,
-  socialSharing,
   effects,
   dataStyle,
 };

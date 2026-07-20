@@ -1,50 +1,27 @@
 # Magic Portfolio
 
-Magic Portfolio is a simple, clean, beginner-friendly portfolio template. It supports an MDX-based content system for projects and blog posts, an about / CV page and a gallery.
+Magic Portfolio is a responsive photography portfolio and event photo delivery system. It combines a public-facing portfolio with a protected workflow that lets photographers organize events, create client galleries, upload photos, and control access to full-resolution downloads.
 
-View the demo [here](https://demo.magic-portfolio.com).
+## What the system does
 
-![Magic Portfolio](public/images/og/home.jpg)
+- Presents the photographer's profile, work, projects, and gallery in a customizable portfolio.
+- Provides authenticated admin pages for photographers to create events and manage client galleries.
+- Assigns an access code to each client gallery so clients can privately find their event photos.
+- Stores preview and original images separately, allowing clients to browse previews before payment.
+- Lets photographers mark a gallery as paid, which unlocks full-resolution photo downloads for the client.
+- Supports queued, offline-friendly uploads with browser-side image processing and synchronization when connectivity returns.
+- Includes responsive layouts, configurable content, SEO metadata, sitemap generation, and dynamic Open Graph images.
 
-## Getting started
+## Tech stack
 
-**1. Clone the repository**
-```
-git clone https://github.com/once-ui-system/magic-portfolio.git
-```
+- **Framework:** Next.js 
+- **UI:** React Once UI
+- **Language:** TypeScript
+- **Styling:** Sass/SCSS, CSS Modules, and Once UI design tokens
+- **Backend:** Supabase Postgres, Auth, Storage, Row Level Security, and database RPC functions
+- **Offline storage and upload queue:** Dexie with IndexedDB
+- **Content:** MDX, `next-mdx-remote`, and Gray Matter
 
-**2. Install dependencies**
-```
-npm install
-```
-
-**3. Run dev server**
-```
-npm run dev
-```
-
-**4. Edit config**
-```
-src/resources/once-ui.config.js
-```
-
-**5. Edit content**
-```
-src/resources/content.js
-```
-
-**6. Create blog posts / projects**
-```
-Add a new .mdx file to src/app/blog/posts or src/app/work/projects
-```
-
-Magic Portfolio was built with [Once UI](https://once-ui.com) for [Next.js](https://nextjs.org). It requires Node.js v18.17+.
-
-## Documentation
-
-Docs available at: [docs.once-ui.com](https://docs.once-ui.com/docs/magic-portfolio/quick-start)
-
-## Features
 
 ### Once UI
 - All tokens, components & features of [Once UI](https://once-ui.com)
@@ -86,6 +63,3 @@ Distributed under the CC BY-NC 4.0 License.
 
 See `LICENSE.txt` for more information.
 
-## Deploy with Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fonce-ui-system%2Fmagic-portfolio&project-name=portfolio&repository-name=portfolio&redirect-url=https%3A%2F%2Fgithub.com%2Fonce-ui-system%2Fmagic-portfolio&demo-title=Magic%20Portfolio&demo-description=Showcase%20your%20designers%20or%20developer%20portfolio&demo-url=https%3A%2F%2Fdemo.magic-portfolio.com&demo-image=%2F%2Fraw.githubusercontent.com%2Fonce-ui-system%2Fmagic-portfolio%2Fmain%2Fpublic%2Fimages%2Fog%2Fhome.jpg)

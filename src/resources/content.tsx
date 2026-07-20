@@ -1,4 +1,4 @@
-import { About, Blog, Gallery, Home, Newsletter, Person, Social, Work } from "@/types";
+import { About, Gallery, Home, Newsletter, Person, Social, Work } from "@/types";
 import { Line, Row, Text } from "@once-ui-system/core";
 
 const person: Person = {
@@ -206,14 +206,6 @@ const about: About = {
   },
 };
 
-const blog: Blog = {
-  path: "/blog",
-  label: "Insights",
-  title: "From the Director's Chair",
-  description: `Industry insights, production breakdowns, and marketing case studies from the Flooy Studio team.`,
-  display: false,
-};
-
 const work: Work = {
   path: "/work",
   label: "Our Work",
@@ -270,4 +262,4 @@ const gallery: Gallery = {
   ],
 };
 
-export { person, social, newsletter, home, about, blog, work, gallery };
+export { person, social, newsletter, home, about, work, gallery };

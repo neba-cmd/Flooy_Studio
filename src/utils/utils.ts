@@ -101,7 +101,7 @@ function getMDXData(dir: string) {
   });
 }
 
-export function getPosts(customPath = ["src", "app", "blog", "posts"]) {
+export function getPosts(customPath: string[]) {
   const relativePath = normalizePath(customPath);
   const postsDir = path.join(projectRoot, ...relativePath);
   return getMDXData(postsDir);

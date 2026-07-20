@@ -212,15 +212,6 @@ export interface About extends BasePageConfig {
 }
 
 /**
- * Blog page configuration.
- * @description Configuration for the Blog page, including metadata, navigation label, and optional display toggle.
- */
-export interface Blog extends BasePageConfig {
-  /** Whether to display the blog page in navigation and route config */
-  display?: boolean;
-}
-
-/**
  * Work/projects page configuration.
  * @description Configuration for the Work/Projects page, including metadata and navigation label.
  */

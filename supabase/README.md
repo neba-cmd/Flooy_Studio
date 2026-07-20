@@ -1,14 +1,11 @@
 # Supabase Setup
 
-The application now models photo delivery as:
+The application models photo delivery as:
 
 1. Event
 2. Client Gallery
 3. Photo
 
-For a fresh project, run `schema.sql` in the Supabase SQL editor. If you
-want to wipe an old development schema first, run `reset-and-create.sql`,
-then run `schema.sql`.
 
 The schema creates:
 
