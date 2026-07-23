@@ -42,11 +42,23 @@ export default function Home() {
       />
       <Column fillWidth horizontal="center" gap="m">
         <Column maxWidth="s" horizontal="center" align="center">
+          <RevealFx fillWidth horizontal="center" paddingTop="16" paddingBottom="12">
+            <Button
+              id="get-photos"
+              data-border="rounded"
+              href="/event-photos"
+              variant="primary"
+              size="m"
+              weight="strong"
+              arrowIcon
+            >
+              Get your photos
+            </Button>
+          </RevealFx>
           {home.featured.display && (
             <RevealFx
               fillWidth
               horizontal="center"
-              paddingTop="16"
               paddingBottom="32"
               paddingLeft="12"
             >
