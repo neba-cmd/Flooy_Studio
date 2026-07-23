@@ -4,6 +4,7 @@ import { markUploading, markFailed, removeUploaded } from "./queue";
 
 const MAX_CONCURRENT_UPLOADS = 3;
 const RETRY_BACKOFF_MS = [2000, 5000, 15000, 30000]; // caps at 30s between retries
+const STALE_UPLOAD_MS = 2 * 60 * 1000;
 
 let syncRunning = false;
 let listenersAttached = false;
@@ -84,6 +85,9 @@ export async function runSyncCycle() {
 
     const eligible = all.filter((item) => {
       if (item.status === "queued") return true;
+      // A tab can close while an item is marked uploading. Recover it instead
+      // of leaving the photo permanently stuck in IndexedDB.
+      if (item.status === "uploading") return now - item.updatedAt >= STALE_UPLOAD_MS;
       if (item.status === "failed") {
         const backoff = RETRY_BACKOFF_MS[Math.min(item.attempts, RETRY_BACKOFF_MS.length - 1)];
         return now - item.updatedAt >= backoff;

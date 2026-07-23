@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { readLimited, safeFetch, SafeFetchError } from '@/lib/safe-fetch';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,11 +12,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Fetch the image
-    const response = await fetch(imageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; ImageProxy/1.0)',
-      },
-    });
+    const response = await safeFetch(imageUrl);
     
     if (!response.ok) {
       return NextResponse.json(
@@ -25,21 +22,25 @@ export async function GET(request: NextRequest) {
     }
     
     // Get the image data
-    const contentType = response.headers.get('content-type') || 'image/jpeg';
-    const imageData = await response.arrayBuffer();
+    const contentType = response.headers.get('content-type')?.toLowerCase() || '';
+    if (!contentType.startsWith('image/') || contentType.includes('svg')) {
+      return NextResponse.json({ error: 'URL did not return a supported image' }, { status: 415 });
+    }
+    const imageData = await readLimited(response, 10 * 1024 * 1024);
     
     // Return the image with appropriate headers
     return new NextResponse(imageData, {
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {
     console.error('Error proxying image:', error);
     return NextResponse.json(
       { error: 'Failed to proxy image' },
-      { status: 500 }
+      { status: error instanceof SafeFetchError ? error.status : 502 }
     );
   }
 }

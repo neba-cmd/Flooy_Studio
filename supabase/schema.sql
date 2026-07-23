@@ -183,17 +183,16 @@ to anon, authenticated
 using (bucket_id = 'previews');
 
 drop policy if exists "Paid clients can read original objects" on storage.objects;
-create policy "Paid clients can read original objects"
+drop policy if exists "Photographers can read original objects" on storage.objects;
+create policy "Photographers can read original objects"
 on storage.objects for select
-to anon, authenticated
+to authenticated
 using (
   bucket_id = 'originals'
   and exists (
-    select 1
-    from public.client_galleries g
-    where g.id = ((storage.foldername(name))[2])::uuid
-      and g.event_id = ((storage.foldername(name))[1])::uuid
-      and g.paid = true
+    select 1 from public.events e
+    where e.id = ((storage.foldername(name))[2])::uuid
+      and e.photographer_id = auth.uid()
   )
 );
 
@@ -204,10 +203,10 @@ to authenticated
 with check (
   bucket_id = 'previews'
   and exists (
-    select 1
-    from public.events e
-    where e.id = ((storage.foldername(name))[1])::uuid
-      and e.photographer_id = auth.uid()
+    select 1 from public.client_galleries g
+    where g.id = ((storage.foldername(name))[1])::uuid
+      and g.event_id = ((storage.foldername(name))[2])::uuid
+      and g.photographer_id = auth.uid()
   )
 );
 
@@ -218,10 +217,10 @@ to authenticated
 with check (
   bucket_id = 'originals'
   and exists (
-    select 1
-    from public.events e
-    where e.id = ((storage.foldername(name))[1])::uuid
-      and e.photographer_id = auth.uid()
+    select 1 from public.client_galleries g
+    where g.id = ((storage.foldername(name))[1])::uuid
+      and g.event_id = ((storage.foldername(name))[2])::uuid
+      and g.photographer_id = auth.uid()
   )
 );
 
@@ -232,19 +231,19 @@ to authenticated
 using (
   bucket_id in ('previews', 'originals')
   and exists (
-    select 1
-    from public.events e
-    where e.id = ((storage.foldername(name))[1])::uuid
-      and e.photographer_id = auth.uid()
+    select 1 from public.client_galleries g
+    where g.id = ((storage.foldername(name))[1])::uuid
+      and g.event_id = ((storage.foldername(name))[2])::uuid
+      and g.photographer_id = auth.uid()
   )
 )
 with check (
   bucket_id in ('previews', 'originals')
   and exists (
-    select 1
-    from public.events e
-    where e.id = ((storage.foldername(name))[1])::uuid
-      and e.photographer_id = auth.uid()
+    select 1 from public.client_galleries g
+    where g.id = ((storage.foldername(name))[1])::uuid
+      and g.event_id = ((storage.foldername(name))[2])::uuid
+      and g.photographer_id = auth.uid()
   )
 );
 
@@ -272,7 +271,7 @@ as $$
     g.paid,
     p.id as photo_id,
     p.preview_path,
-    case when g.paid then p.original_path else null end as original_path,
+    null::text as original_path,
     coalesce(p.taken_at, p.created_at) as taken_at
   from public.client_galleries g
   left join public.photos p on p.gallery_id = g.id
@@ -280,4 +279,29 @@ as $$
   order by p.created_at desc;
 $$;
 
+revoke execute on function public.get_client_gallery_by_access_code(text) from public;
 grant execute on function public.get_client_gallery_by_access_code(text) to anon, authenticated;
+
+-- Validate a single paid download without returning the entire gallery. The
+-- service route uses this result before its server-only service key signs the
+-- object, so clients never receive unrestricted original-storage access.
+create or replace function public.get_paid_photo_by_access_code(
+  p_code text,
+  p_photo_id uuid
+)
+returns table (original_path text)
+language sql
+security definer
+set search_path = public
+as $$
+  select p.original_path
+  from public.client_galleries g
+  join public.photos p on p.gallery_id = g.id
+  where g.access_code = upper(trim(p_code))
+    and g.paid = true
+    and p.id = p_photo_id
+  limit 1;
+$$;
+
+revoke execute on function public.get_paid_photo_by_access_code(text, uuid) from public;
+grant execute on function public.get_paid_photo_by_access_code(text, uuid) to anon, authenticated;

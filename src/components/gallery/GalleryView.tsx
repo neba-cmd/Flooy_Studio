@@ -9,7 +9,7 @@ export default function GalleryView() {
       {gallery.images.map((image, index) => (
         <Media
           enlarge
-          priority={index < 10}
+          priority={index < 2}
           sizes="(max-width: 560px) 100vw, 50vw"
           key={index}
           radius="m"

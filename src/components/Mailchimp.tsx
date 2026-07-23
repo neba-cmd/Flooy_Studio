@@ -47,7 +47,9 @@ export const Mailchimp: React.FC<React.ComponentProps<typeof Column>> = ({ ...fl
     }
   };
 
-  if (newsletter.display === false) return null;
+  // Do not render a form that would submit visitor email addresses to the
+  // template placeholder. It becomes active once a real Mailchimp URL is set.
+  if (newsletter.display === false || mailchimp.action.startsWith("https://url/")) return null;
 
   return (
     <Column

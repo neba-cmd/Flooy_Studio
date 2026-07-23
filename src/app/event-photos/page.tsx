@@ -18,6 +18,7 @@ export default function EventPhotosPage() {
   const [paid, setPaid] = useState(false);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  const [activeCode, setActiveCode] = useState("");
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
 
@@ -26,6 +27,8 @@ export default function EventPhotosPage() {
     setError(null);
     setDownloadMessage(null);
     setPhotos([]);
+    setPreviewUrls({});
+    setActiveCode("");
     const normalizedCode = code.trim().toUpperCase();
     const supabase = createClient();
 
@@ -44,41 +47,10 @@ export default function EventPhotosPage() {
       rows = rpcData.filter((r: { photo_id: string | null }) => r.photo_id) as GalleryPhoto[];
     }
 
-    if (rpcError || rows.length === 0) {
-      const { data: galleryData, error: galleryError } = await supabase
-        .from("client_galleries")
-        .select("id, paid")
-        .eq("access_code", normalizedCode)
-        .maybeSingle();
-
-      if (galleryError || !galleryData) {
-        setLoading(false);
-        setError("No photos found for that code yet.");
-        return;
-      }
-
-      galleryPaid = Boolean(galleryData.paid);
-
-      const { data: photoData, error: photoError } = await supabase
-        .from("photos")
-        .select("id, preview_path, original_path")
-        .eq("gallery_id", galleryData.id)
-        .order("created_at", { ascending: false });
-
-      if (photoError) {
-        setLoading(false);
-        setError("Something went wrong. Please try again.");
-        return;
-      }
-
-      rows = (photoData ?? [])
-        .filter((row) => row.preview_path)
-        .map((row) => ({
-          photo_id: row.id,
-          preview_path: row.preview_path,
-          original_path: row.original_path,
-          taken_at: "",
-        }));
+    if (rpcError || !rpcData?.length) {
+      setLoading(false);
+      setError("No gallery was found for that code.");
+      return;
     }
 
     setLoading(false);
@@ -90,22 +62,28 @@ export default function EventPhotosPage() {
 
     setPaid(galleryPaid);
     setPhotos(rows);
+    setActiveCode(normalizedCode);
 
     const urls: Record<string, string> = {};
-    for (const p of rows) {
-      const { data: signed } = await supabase.storage
-        .from("previews")
-        .createSignedUrl(p.preview_path, 3600);
-      if (signed) urls[p.photo_id] = signed.signedUrl;
+    const { data: signedPreviews, error: signingError } = await supabase.storage
+      .from("previews")
+      .createSignedUrls(rows.map((photo) => photo.preview_path), 3600);
+    if (signingError) {
+      setError("The gallery opened, but previews could not be loaded.");
+      return;
+    }
+    for (let index = 0; index < rows.length; index += 1) {
+      const signedUrl = signedPreviews?.[index]?.signedUrl;
+      if (signedUrl) urls[rows[index].photo_id] = signedUrl;
     }
     setPreviewUrls(urls);
   }
 
-  // Originals live in a private bucket. Storage RLS only allows
-  // signed URLs when the gallery is marked paid.
+  // Originals live in a private bucket. The server verifies the active access
+  // code, paid state, and photo membership before creating a short-lived URL.
   async function downloadOriginal(photoId: string) {
     const photo = photos.find((p) => p.photo_id === photoId);
-    if (!photo?.original_path) {
+    if (!photo || !activeCode) {
       setError("This photo is not available for download yet.");
       return;
     }
@@ -115,18 +93,18 @@ export default function EventPhotosPage() {
     setDownloadMessage(null);
 
     try {
-      const supabase = createClient();
-      const { data, error: signedError } = await supabase.storage
-        .from("originals")
-        .createSignedUrl(photo.original_path, 300, {
-          download: true,
-        });
+      const response = await fetch("/api/download-original", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: activeCode, photoId }),
+      });
+      const data = (await response.json().catch(() => null)) as { url?: string } | null;
 
-      if (signedError || !data?.signedUrl) {
+      if (!response.ok || !data?.url) {
         setError("Couldn't get download link. Please try again.");
       } else {
         const link = document.createElement("a");
-        link.href = data.signedUrl;
+        link.href = data.url;
         link.download = "";
         document.body.appendChild(link);
         link.click();

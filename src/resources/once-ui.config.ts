@@ -188,18 +188,17 @@ const mailchimp: MailchimpConfig = {
 
 // default schema data
 const schema: SchemaConfig = {
-  logo: "",
+  logo: "/images/FlooyLogo.png",
   type: "Organization",
-  name: "Once UI",
+  name: "Flooy Studio",
   description: home.description,
-  email: "lorant@once-ui.com",
+  email: "flooystudio@gmail.com",
 };
 
 // social links
 const sameAs: SameAsConfig = {
-  threads: "https://www.threads.com/@once_ui",
-  linkedin: "https://www.linkedin.com/company/once-ui/",
-  discord: "https://discord.com/invite/5EyAQ4eNdS",
+  linkedin: "https://www.linkedin.com/in/nebiyu-tsegay-018a36245/",
+  instagram: "https://www.instagram.com/flooystudios/",
 };
 
 export {

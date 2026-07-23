@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { readLimited, safeFetch, SafeFetchError } from '@/lib/safe-fetch';
 
 export const runtime = 'edge';
 
@@ -25,25 +26,6 @@ function decodeHTMLEntities(text: string): string {
     
     return entities[entity] || match;
   });
-}
-
-async function fetchWithTimeout(url: string, timeout = 5000) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const response = await fetch(url, { 
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'bot'
-      }
-    });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
 }
 
 async function extractMetadata(html: string) {
@@ -74,13 +56,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetchWithTimeout(url);
+    const response = await safeFetch(url);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch URL: ${response.status}`);
     }
 
-    const html = await response.text();
+    const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+    if (!contentType.includes('text/html')) {
+      return NextResponse.json({ error: 'URL did not return HTML' }, { status: 415 });
+    }
+    const html = new TextDecoder().decode(await readLimited(response, 2 * 1024 * 1024));
     const metadata = await extractMetadata(html);
 
     return NextResponse.json({
@@ -92,7 +78,6 @@ export async function GET(request: Request) {
     
     return NextResponse.json({ 
       error: 'Failed to fetch metadata',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    }, { status: 500 });
+    }, { status: error instanceof SafeFetchError ? error.status : 502 });
   }
 }
