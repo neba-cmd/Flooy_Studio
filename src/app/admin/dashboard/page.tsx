@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { AdminAuthGate } from "@/components/AdminAuthGate";
 import { AdminNav } from "@/components/AdminNav";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +21,27 @@ interface GalleryRow {
   paid_at: string | null;
   photo_count: number;
 }
+
+interface PhotoRow {
+  id: string;
+  file_name: string;
+  preview_path: string;
+  original_path: string;
+}
+
+interface DashboardStats {
+  galleries: number;
+  photos: number;
+  paidGalleries: number;
+  paidPhotos: number;
+}
+
+const EMPTY_STATS: DashboardStats = {
+  galleries: 0,
+  photos: 0,
+  paidGalleries: 0,
+  paidPhotos: 0,
+};
 
 export default function DashboardPage() {
   return (
@@ -49,6 +70,17 @@ function DashboardScreen({
   const [eventName, setEventName] = useState("");
   const [creatingEvent, setCreatingEvent] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
+  const [openGalleryId, setOpenGalleryId] = useState<string | null>(null);
+  const [galleryPhotos, setGalleryPhotos] = useState<Record<string, PhotoRow[]>>({});
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  const [loadingGallery, setLoadingGallery] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
+
+  const selectedEvent = useMemo(
+    () => events.find((event) => event.id === selectedEventId),
+    [events, selectedEventId]
+  );
 
   const loadEvents = useCallback(async () => {
     setLoadingEvents(true);
@@ -74,6 +106,7 @@ function DashboardScreen({
   const loadGalleries = useCallback(async () => {
     if (!selectedEventId) {
       setRows([]);
+      setStats(EMPTY_STATS);
       return;
     }
 
@@ -81,32 +114,24 @@ function DashboardScreen({
     setLoadingRows(true);
     const supabase = createClient();
 
-    let query = supabase
+    const { data: allGalleries, error: allGalleriesError } = await supabase
       .from("client_galleries")
       .select("id, event_id, name, access_code, paid, paid_at")
       .eq("event_id", selectedEventId)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(500);
 
-    if (term) {
-      query = supabase
-        .from("client_galleries")
-        .select("id, event_id, name, access_code, paid, paid_at")
-        .eq("event_id", selectedEventId)
-        .or(`access_code.ilike.%${term}%,name.ilike.%${term}%`)
-        .order("created_at", { ascending: false })
-        .limit(100);
-    }
-
-    const { data: galleries, error } = await query;
-    if (error || !galleries) {
+    if (allGalleriesError || !allGalleries) {
       setRows([]);
-      setStatus(`Could not load client galleries: ${error?.message ?? "No galleries returned"}`);
+      setStats(EMPTY_STATS);
+      setStatus(
+        `Could not load client galleries: ${allGalleriesError?.message ?? "No galleries returned"}`
+      );
       setLoadingRows(false);
       return;
     }
 
-    const ids = galleries.map((gallery) => gallery.id);
+    const ids = allGalleries.map((gallery) => gallery.id);
     const { data: photos } = await supabase
       .from("photos")
       .select("gallery_id")
@@ -117,6 +142,23 @@ function DashboardScreen({
       counts.set(photo.gallery_id, (counts.get(photo.gallery_id) ?? 0) + 1);
     }
 
+    const galleries = term
+      ? allGalleries.filter(
+          (gallery) =>
+            gallery.access_code.toUpperCase().includes(term) ||
+            gallery.name.toUpperCase().includes(term)
+        )
+      : allGalleries;
+
+    setStats({
+      galleries: allGalleries.length,
+      photos: photos?.length ?? 0,
+      paidGalleries: allGalleries.filter((gallery) => gallery.paid).length,
+      paidPhotos: allGalleries.reduce(
+        (total, gallery) => total + (gallery.paid ? counts.get(gallery.id) ?? 0 : 0),
+        0
+      ),
+    });
     setRows(
       galleries.map((gallery) => ({
         ...gallery,
@@ -125,6 +167,96 @@ function DashboardScreen({
     );
     setLoadingRows(false);
   }, [search, selectedEventId]);
+
+  async function openGallery(row: GalleryRow) {
+    if (openGalleryId === row.id) {
+      setOpenGalleryId(null);
+      return;
+    }
+
+    setOpenGalleryId(row.id);
+    if (galleryPhotos[row.id]) return;
+
+    setLoadingGallery(row.id);
+    setStatus(null);
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("photos")
+      .select("id, file_name, preview_path, original_path")
+      .eq("gallery_id", row.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      setStatus(`Could not open ${row.name}: ${error.message}`);
+      setLoadingGallery(null);
+      return;
+    }
+
+    const photos = (data ?? []) as PhotoRow[];
+    setGalleryPhotos((current) => ({ ...current, [row.id]: photos }));
+
+    if (photos.length) {
+      const { data: signed, error: signError } = await supabase.storage
+        .from("previews")
+        .createSignedUrls(
+          photos.map((photo) => photo.preview_path),
+          3600
+        );
+
+      if (signError) {
+        setStatus(`Gallery opened, but previews could not load: ${signError.message}`);
+      } else {
+        const urls: Record<string, string> = {};
+        photos.forEach((photo, index) => {
+          const url = signed?.[index]?.signedUrl;
+          if (url) urls[photo.id] = url;
+        });
+        setPreviewUrls((current) => ({ ...current, ...urls }));
+      }
+    }
+    setLoadingGallery(null);
+  }
+
+  async function downloadPhotos(row: GalleryRow, photos: PhotoRow[], photo?: PhotoRow) {
+    const selected = photo ? [photo] : photos;
+    if (!selected.length) return;
+
+    setDownloading(photo?.id ?? row.id);
+    setStatus(null);
+    const supabase = createClient();
+    const { data, error } = await supabase.storage
+      .from("originals")
+      .createSignedUrls(
+        selected.map((item) => item.original_path),
+        300,
+        { download: true }
+      );
+
+    if (error) {
+      setStatus(`Could not prepare the download: ${error.message}`);
+      setDownloading(null);
+      return;
+    }
+
+    data?.forEach((item, index) => {
+      if (!item.signedUrl) return;
+      const signedUrl = item.signedUrl;
+      window.setTimeout(() => {
+        const link = document.createElement("a");
+        link.href = signedUrl;
+        link.download = selected[index]?.file_name ?? "";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }, index * 250);
+    });
+    setStatus(
+      selected.length === 1
+        ? `Downloading ${selected[0].file_name}.`
+        : `Starting ${selected.length} downloads from ${row.name}. Your browser may ask for permission to download multiple files.`
+    );
+    setDownloading(null);
+  }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -184,6 +316,13 @@ function DashboardScreen({
       setRows((prev) =>
         prev.map((r) => (r.id === row.id ? { ...r, paid: nextPaid, paid_at: paidAt } : r))
       );
+      setStats((current) => ({
+        ...current,
+        paidGalleries: current.paidGalleries + (nextPaid ? 1 : -1),
+        paidPhotos: current.paidPhotos + (nextPaid ? row.photo_count : -row.photo_count),
+      }));
+    } else {
+      setStatus(`Could not update payment status: ${error.message}`);
     }
 
     setUpdating(null);
@@ -193,7 +332,41 @@ function DashboardScreen({
     <main className={styles.main}>
       <AdminNav displayName={displayName} active="dashboard" />
 
-      <h1 className={styles.h1}>Events</h1>
+      <header className={styles.pageHeader}>
+        <div>
+          <p className={styles.eyebrow}>Admin overview</p>
+          <h1 className={styles.h1}>Dashboard</h1>
+          <p className={styles.subtitle}>
+            {selectedEvent ? `Showing activity for ${selectedEvent.name}` : "Select an event to begin"}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void loadGalleries()}
+          disabled={!selectedEventId || loadingRows}
+          className={styles.secondaryButton}
+        >
+          {loadingRows ? "Refreshing…" : "Refresh"}
+        </button>
+      </header>
+
+      <section className={styles.statsGrid} aria-label="Event statistics">
+        <article className={styles.statCard}>
+          <span className={styles.statLabel}>Uploaded photos</span>
+          <strong className={styles.statValue}>{stats.photos.toLocaleString()}</strong>
+          <span className={styles.statDetail}>Full gallery total</span>
+        </article>
+        <article className={styles.statCard}>
+          <span className={styles.statLabel}>Paid galleries</span>
+          <strong className={styles.statValue}>{stats.paidGalleries.toLocaleString()}</strong>
+          <span className={styles.statDetail}>of {stats.galleries} galleries</span>
+        </article>
+        <article className={styles.statCard}>
+          <span className={styles.statLabel}>Photos paid for</span>
+          <strong className={styles.statValue}>{stats.paidPhotos.toLocaleString()}</strong>
+          <span className={styles.statDetail}>Inside paid galleries</span>
+        </article>
+      </section>
 
       <div className={styles.card}>
         <div className={styles.cardTitle}>Event</div>
@@ -235,6 +408,13 @@ function DashboardScreen({
 
       {status && <p className={styles.status}>{status}</p>}
 
+      <div className={styles.galleryHeader}>
+        <div>
+          <h2 className={styles.sectionTitle}>Client galleries</h2>
+          <p className={styles.sectionSubtitle}>Open a gallery to preview or download its photos.</p>
+        </div>
+      </div>
+
       <div className={styles.searchRow}>
         <input
           value={search}
@@ -265,28 +445,105 @@ function DashboardScreen({
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className={styles.row}>
-                  <td className={styles.td}>{row.name}</td>
-                  <td className={styles.tdCode}>{row.access_code}</td>
-                  <td className={styles.tdCount}>{row.photo_count}</td>
-                  <td className={styles.td}>
-                    <span className={row.paid ? styles.badgePaid : styles.badgeUnpaid}>
-                      {row.paid ? "Paid" : "Unpaid"}
-                    </span>
-                  </td>
-                  <td className={styles.tdRight}>
-                    <button
-                      type="button"
-                      onClick={() => togglePaid(row)}
-                      disabled={updating === row.id}
-                      className={styles.toggleButton}
-                    >
-                      {updating === row.id ? "..." : row.paid ? "Mark unpaid" : "Mark paid"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {rows.map((row) => {
+                const photos = galleryPhotos[row.id] ?? [];
+                const isOpen = openGalleryId === row.id;
+                return (
+                  <Fragment key={row.id}>
+                    <tr className={styles.row}>
+                      <td className={styles.td}>
+                        <button
+                          type="button"
+                          onClick={() => void openGallery(row)}
+                          className={styles.galleryNameButton}
+                          aria-expanded={isOpen}
+                        >
+                          <span>{row.name}</span>
+                          <span className={styles.viewHint}>{isOpen ? "Close" : "View gallery"}</span>
+                        </button>
+                      </td>
+                      <td className={styles.tdCode}>{row.access_code}</td>
+                      <td className={styles.tdCount}>{row.photo_count}</td>
+                      <td className={styles.td}>
+                        <span className={row.paid ? styles.badgePaid : styles.badgeUnpaid}>
+                          {row.paid ? "Paid" : "Unpaid"}
+                        </span>
+                      </td>
+                      <td className={styles.tdRight}>
+                        <button
+                          type="button"
+                          onClick={() => void togglePaid(row)}
+                          disabled={updating === row.id}
+                          className={styles.toggleButton}
+                        >
+                          {updating === row.id ? "..." : row.paid ? "Mark unpaid" : "Mark paid"}
+                        </button>
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <tr key={`${row.id}-gallery`} className={styles.expandedRow}>
+                        <td colSpan={5} className={styles.expandedCell}>
+                          <div className={styles.expandedHeader}>
+                            <div>
+                              <h3 className={styles.expandedTitle}>{row.name}</h3>
+                              <p className={styles.expandedMeta}>
+                                {row.photo_count} {row.photo_count === 1 ? "photo" : "photos"} · Code{" "}
+                                {row.access_code}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void downloadPhotos(row, photos)}
+                              disabled={!photos.length || downloading === row.id}
+                              className={styles.downloadAllButton}
+                            >
+                              {downloading === row.id ? "Preparing…" : "Download all"}
+                            </button>
+                          </div>
+                          {loadingGallery === row.id ? (
+                            <p className={styles.empty}>Loading gallery…</p>
+                          ) : photos.length === 0 ? (
+                            <p className={styles.empty}>This gallery has no uploaded photos yet.</p>
+                          ) : (
+                            <div className={styles.photoGrid}>
+                              {photos.map((photo) => (
+                                <article key={photo.id} className={styles.photoCard}>
+                                  <div className={styles.photoFrame}>
+                                    {previewUrls[photo.id] ? (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        src={previewUrls[photo.id]}
+                                        alt={photo.file_name}
+                                        className={styles.photo}
+                                      />
+                                    ) : (
+                                      <span className={styles.photoPlaceholder}>Loading…</span>
+                                    )}
+                                  </div>
+                                  <div className={styles.photoFooter}>
+                                    <span className={styles.fileName} title={photo.file_name}>
+                                      {photo.file_name}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => void downloadPhotos(row, photos, photo)}
+                                      disabled={downloading === photo.id}
+                                      className={styles.iconButton}
+                                      aria-label={`Download ${photo.file_name}`}
+                                    >
+                                      {downloading === photo.id ? "…" : "↓"}
+                                    </button>
+                                  </div>
+                                </article>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
