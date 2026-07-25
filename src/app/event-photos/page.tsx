@@ -18,7 +18,9 @@ export default function EventPhotosPage() {
   const [paid, setPaid] = useState(false);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  const [loadedPreviews, setLoadedPreviews] = useState<Record<string, boolean>>({});
   const [activeCode, setActiveCode] = useState("");
+  const [emptyGalleryCode, setEmptyGalleryCode] = useState("");
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
 
@@ -28,7 +30,9 @@ export default function EventPhotosPage() {
     setDownloadMessage(null);
     setPhotos([]);
     setPreviewUrls({});
+    setLoadedPreviews({});
     setActiveCode("");
+    setEmptyGalleryCode("");
     const normalizedCode = code.trim().toUpperCase();
     const supabase = createClient();
 
@@ -56,7 +60,7 @@ export default function EventPhotosPage() {
     setLoading(false);
 
     if (rows.length === 0) {
-      setError("This gallery exists, but no photos have been uploaded yet.");
+      setEmptyGalleryCode(normalizedCode);
       return;
     }
 
@@ -142,9 +146,40 @@ export default function EventPhotosPage() {
 
       {error && <p className={styles.error}>{error}</p>}
       {downloadMessage && <p className={styles.success}>{downloadMessage}</p>}
+      {emptyGalleryCode && (
+        <section className={styles.emptyGallery} role="status" aria-live="polite">
+          <div className={styles.emptyGalleryHeader}>
+            <span className={styles.confirmationIcon} aria-hidden="true">✓</span>
+            <div>
+              <h2 className={styles.emptyGalleryTitle}>Your code is valid</h2>
+              <p className={styles.confirmedCode}>Gallery code: {emptyGalleryCode}</p>
+            </div>
+          </div>
+          <p className={styles.photoCount}>
+            <strong>0 photos</strong> are currently in this folder.
+          </p>
+          <p className={styles.uploadNote}>
+            If you have been told that your photos are being uploaded, please allow some time
+            for the upload to finish. If your photos still do not appear by the next day,
+            please check with the contact desk or call us using one of the phone numbers
+            listed on our website.
+          </p>
+        </section>
+      )}
 
       {photos.length > 0 && (
         <>
+          <div className={styles.gallerySummary}>
+            <div>
+              <p className={styles.galleryEyebrow}>Your gallery</p>
+              <h2 className={styles.galleryTitle}>
+                {photos.length} {photos.length === 1 ? "photo" : "photos"}
+              </h2>
+            </div>
+            <span className={paid ? styles.statusReady : styles.statusPreview}>
+              {paid ? "Downloads ready" : "Preview only"}
+            </span>
+          </div>
           {paid ? (
             <p className={styles.readyNotice}>
               Your gallery is ready. Choose a photo and tap Download.
@@ -157,14 +192,30 @@ export default function EventPhotosPage() {
           <div className={styles.grid}>
             {photos.map((p) => (
               <div key={p.photo_id} className={styles.card}>
-                {previewUrls[p.photo_id] && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={previewUrls[p.photo_id]}
-                    alt="Event preview"
-                    className={styles.thumb}
-                  />
-                )}
+                <div className={styles.previewFrame}>
+                  {!loadedPreviews[p.photo_id] && (
+                    <div className={styles.imageSkeleton} aria-hidden="true">
+                      <span className={styles.loadingIcon}>✦</span>
+                      <span className={styles.loadingText}>Loading photo</span>
+                    </div>
+                  )}
+                  {previewUrls[p.photo_id] && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={previewUrls[p.photo_id]}
+                      alt="Event preview"
+                      className={`${styles.thumb} ${
+                        loadedPreviews[p.photo_id] ? styles.thumbLoaded : ""
+                      }`}
+                      onLoad={() =>
+                        setLoadedPreviews((current) => ({
+                          ...current,
+                          [p.photo_id]: true,
+                        }))
+                      }
+                    />
+                  )}
+                </div>
                 <div className={styles.cardFooter}>
                   {paid ? (
                     <button
@@ -173,7 +224,14 @@ export default function EventPhotosPage() {
                       disabled={downloadingId === p.photo_id}
                       className={styles.downloadBtn}
                     >
-                      {downloadingId === p.photo_id ? "Starting..." : "Download photo"}
+                      {downloadingId === p.photo_id ? (
+                        <span className={styles.buttonLoading}>
+                          <span className={styles.spinner} aria-hidden="true" />
+                          Preparing…
+                        </span>
+                      ) : (
+                        "Download photo"
+                      )}
                     </button>
                   ) : (
                     <div className={styles.lockedBtn}>Locked</div>

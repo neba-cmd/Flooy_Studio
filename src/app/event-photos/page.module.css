@@ -80,6 +80,60 @@
   color: #6ee7b7;
 }
 
+.emptyGallery {
+  margin-top: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(52, 211, 153, 0.08);
+  padding: 1rem 1.125rem;
+}
+
+.emptyGalleryHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.confirmationIcon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #34d399;
+  color: #07130f;
+  font-weight: 800;
+}
+
+.emptyGalleryTitle {
+  margin: 0;
+  color: #6ee7b7;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.confirmedCode {
+  margin: 0.15rem 0 0;
+  color: #b8e8d6;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.photoCount {
+  margin: 1rem 0 0;
+  color: #f0f0f0;
+  font-size: 0.95rem;
+}
+
+.uploadNote {
+  margin: 0.65rem 0 0;
+  color: #c7c7c7;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
 .notice {
   margin-top: 1.5rem;
   border-radius: 8px;
@@ -100,11 +154,57 @@
   color: #6ee7b7;
 }
 
+.gallerySummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-bottom: 0.25rem;
+}
+
+.galleryEyebrow {
+  margin: 0 0 0.15rem;
+  color: #8a8a8a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.galleryTitle {
+  margin: 0;
+  color: #f5f5f5;
+  font-size: 1.35rem;
+  font-weight: 650;
+}
+
+.statusReady,
+.statusPreview {
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.statusReady {
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  background: rgba(52, 211, 153, 0.1);
+  color: #6ee7b7;
+}
+
+.statusPreview {
+  border: 1px solid rgba(245, 185, 66, 0.32);
+  background: rgba(245, 185, 66, 0.1);
+  color: #f5b942;
+}
+
 .grid {
   margin-top: 1.5rem;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 @media (min-width: 640px) {
@@ -115,19 +215,89 @@
 
 .card {
   overflow: hidden;
-  border-radius: 8px;
+  border: 1px solid #242424;
+  border-radius: 12px;
   background: #111111;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.card:hover {
+  border-color: #383838;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.previewFrame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: #161616;
+}
+
+.imageSkeleton {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  overflow: hidden;
+  color: #777777;
+}
+
+.imageSkeleton::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.07) 45%,
+    rgba(255, 255, 255, 0.11) 50%,
+    transparent 70%
+  );
+  content: "";
+  transform: translateX(-100%);
+  animation: imageShimmer 1.4s ease-in-out infinite;
+}
+
+.loadingIcon {
+  font-size: 1.25rem;
+  animation: loadingPulse 1.4s ease-in-out infinite;
+}
+
+.loadingText {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .thumb {
-  aspect-ratio: 1 / 1;
+  position: relative;
+  z-index: 2;
+  height: 100%;
   width: 100%;
   object-fit: cover;
   display: block;
+  opacity: 0;
+  transform: scale(1.025);
+  transition:
+    opacity 420ms ease,
+    transform 600ms ease;
+}
+
+.thumbLoaded {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .cardFooter {
-  padding: 0.5rem;
+  padding: 0.65rem;
 }
 
 .downloadBtn {
@@ -140,11 +310,35 @@
   font-weight: 700;
   color: #07130f;
   cursor: pointer;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.downloadBtn:hover:not(:disabled) {
+  background: #6ee7b7;
+  transform: translateY(-1px);
 }
 
 .downloadBtn:disabled {
   opacity: 0.65;
   cursor: wait;
+}
+
+.buttonLoading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.spinner {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 2px solid rgba(7, 19, 15, 0.3);
+  border-top-color: #07130f;
+  border-radius: 999px;
+  animation: buttonSpin 700ms linear infinite;
 }
 
 .lockedBtn {
@@ -155,6 +349,43 @@
   text-align: center;
   font-size: 0.75rem;
   color: #8a8a8a;
+}
+
+@keyframes imageShimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes loadingPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes buttonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .thumb,
+  .downloadBtn,
+  .imageSkeleton::after,
+  .loadingIcon,
+  .spinner {
+    animation: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 520px) {
@@ -168,5 +399,9 @@
 
   .button {
     width: 100%;
+  }
+
+  .grid {
+    gap: 0.75rem;
   }
 }
