@@ -11,6 +11,12 @@ interface GalleryPhoto {
   taken_at: string;
 }
 
+const DOWNLOAD_ATTEMPTS = 2;
+
+function wait(milliseconds: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
 export default function EventPhotosPage() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -97,26 +103,52 @@ export default function EventPhotosPage() {
     setDownloadMessage(null);
 
     try {
-      const response = await fetch("/api/download-original", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: activeCode, photoId }),
-      });
-      const data = (await response.json().catch(() => null)) as { url?: string } | null;
+      let lastMessage = "The download could not start. Please try again.";
 
-      if (!response.ok || !data?.url) {
-        setError("Couldn't get download link. Please try again.");
-      } else {
-        const link = document.createElement("a");
-        link.href = data.url;
-        link.download = "";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setDownloadMessage(
-          "Your download has started. Thank you for taking your pic with us."
-        );
+      for (let attempt = 0; attempt < DOWNLOAD_ATTEMPTS; attempt += 1) {
+        try {
+          const response = await fetch("/api/download-original", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: activeCode, photoId }),
+            cache: "no-store",
+          });
+          const data = (await response.json().catch(() => null)) as {
+            url?: string;
+            fileName?: string;
+            error?: string;
+          } | null;
+
+          if (response.ok && data?.url) {
+            const link = document.createElement("a");
+            link.href = data.url;
+            link.download = data.fileName ?? "";
+            link.rel = "noopener";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setDownloadMessage(
+              "Download started. If your browser asks for permission, choose Allow."
+            );
+            return;
+          }
+
+          lastMessage = data?.error ?? lastMessage;
+          // Retry service/network failures, but not permanent states such as
+          // an unpaid gallery or a photo that is still uploading.
+          if (response.status < 500) break;
+        } catch {
+          lastMessage = navigator.onLine
+            ? "The connection was interrupted while preparing your photo."
+            : "You appear to be offline. Reconnect and try the download again.";
+        }
+
+        if (attempt < DOWNLOAD_ATTEMPTS - 1) await wait(700);
       }
+
+      setError(lastMessage);
+    } catch {
+      setError("Something unexpected happened. Please try the download again.");
     } finally {
       setDownloadingId(null);
     }
@@ -230,7 +262,7 @@ export default function EventPhotosPage() {
                           Preparing…
                         </span>
                       ) : (
-                        "Download photo"
+                        "Download full quality"
                       )}
                     </button>
                   ) : (

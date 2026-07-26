@@ -25,7 +25,9 @@ Required deployment environment variables:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only; required for customer downloads)
 
-The app does not require a service-role key for normal operation. Original
-photo downloads are protected by the `Paid clients can read original objects`
-Storage RLS policy in `schema.sql`.
+Never prefix the service-role key with `NEXT_PUBLIC_` or expose it in browser
+code. The `/api/download-original` server route uses it only after verifying
+the access code, paid gallery status, and requested photo membership. It then
+creates a short-lived, single-file download URL.
