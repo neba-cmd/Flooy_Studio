@@ -1,0 +1,107 @@
+.desktopPhotoCta {
+  min-height: 3rem;
+  padding-inline: 1.35rem !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 10px 30px rgba(245, 185, 66, 0.22);
+}
+
+.mobileCtaBar {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .home {
+    padding-bottom: 7rem !important;
+  }
+
+  .desktopPhotoCta {
+    width: min(100%, 20rem);
+    min-height: 3.25rem;
+    font-size: 1rem !important;
+  }
+
+  .mobileCtaBar {
+    position: fixed;
+    z-index: 1000;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    padding: 0.65rem 0.75rem calc(0.65rem + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, #080808 70%, rgba(8, 8, 8, 0));
+    pointer-events: none;
+  }
+
+  .mobilePhotoCta {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    min-height: 4rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    background: #f5b942;
+    padding: 0.55rem 0.8rem;
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.55),
+      0 0 24px rgba(245, 185, 66, 0.2);
+    color: #161006;
+    text-decoration: none;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobilePhotoCta:active {
+    transform: scale(0.985);
+  }
+
+  .mobilePhotoCta span:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .mobilePhotoCta small {
+    margin-bottom: 0.18rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    opacity: 0.72;
+  }
+
+  .mobilePhotoCta strong {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .cameraIcon {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(10, 10, 10, 0.12);
+    font-size: 1.15rem;
+  }
+
+  .arrow {
+    padding-right: 0.2rem;
+    font-size: 1.4rem;
+    font-weight: 500;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (max-width: 640px) {
+  .mobileCtaBar {
+    animation: ctaEnter 500ms 250ms both ease-out;
+  }
+
+  @keyframes ctaEnter {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
+}

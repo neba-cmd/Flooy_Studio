@@ -10,9 +10,11 @@ import {
   Schema,
   Meta,
 } from "@once-ui-system/core";
+import Link from "next/link";
 import { home, about, person, baseURL } from "@/resources";
 import { Mailchimp } from "@/components";
 import { Projects } from "@/components/work/Projects";
+import styles from "./page.module.css";
 
 export async function generateMetadata() {
   return Meta.generate({
@@ -26,35 +28,43 @@ export async function generateMetadata() {
 
 export default function Home() {
   return (
-    <Column maxWidth="m" gap="xl" paddingY="12" horizontal="center">
-      <Schema
-        as="webPage"
-        baseURL={baseURL}
-        path={home.path}
-        title={home.title}
-        description={home.description}
-        image={`/api/og/generate?title=${encodeURIComponent(home.title)}`}
-        author={{
-          name: person.name,
-          url: `${baseURL}${about.path}`,
-          image: `${baseURL}${person.avatar}`,
-        }}
-      />
-      <Column fillWidth horizontal="center" gap="m">
-        <Column maxWidth="s" horizontal="center" align="center">
-          <RevealFx fillWidth horizontal="center" paddingTop="16" paddingBottom="12">
-            <Button
-              id="get-photos"
-              data-border="rounded"
-              href="/event-photos"
-              variant="primary"
-              size="m"
-              weight="strong"
-              arrowIcon
-            >
-              Get your photos
-            </Button>
-          </RevealFx>
+    <>
+      <Column
+        className={styles.home}
+        maxWidth="m"
+        gap="xl"
+        paddingY="12"
+        horizontal="center"
+      >
+        <Schema
+          as="webPage"
+          baseURL={baseURL}
+          path={home.path}
+          title={home.title}
+          description={home.description}
+          image={`/api/og/generate?title=${encodeURIComponent(home.title)}`}
+          author={{
+            name: person.name,
+            url: `${baseURL}${about.path}`,
+            image: `${baseURL}${person.avatar}`,
+          }}
+        />
+        <Column fillWidth horizontal="center" gap="m">
+          <Column maxWidth="s" horizontal="center" align="center">
+            <RevealFx fillWidth horizontal="center" paddingTop="16" paddingBottom="12">
+              <Button
+                id="get-photos"
+                className={styles.desktopPhotoCta}
+                data-border="rounded"
+                href="/event-photos"
+                variant="primary"
+                size="m"
+                weight="strong"
+                arrowIcon
+              >
+                Get your pictures
+              </Button>
+            </RevealFx>
           {home.featured.display && (
             <RevealFx
               fillWidth
@@ -108,13 +118,25 @@ export default function Home() {
               </Row>
             </Button>
           </RevealFx>
+          </Column>
         </Column>
+        <RevealFx translateY="16" delay={0.6}>
+          <Projects range={[1, 1]} />
+        </RevealFx>
+        <Projects range={[2]} />
+        <Mailchimp />
       </Column>
-      <RevealFx translateY="16" delay={0.6}>
-        <Projects range={[1, 1]} />
-      </RevealFx>
-      <Projects range={[2]} />
-      <Mailchimp />
-    </Column>
+
+      <div className={styles.mobileCtaBar}>
+        <Link href="/event-photos" className={styles.mobilePhotoCta}>
+          <span className={styles.cameraIcon} aria-hidden="true">▣</span>
+          <span>
+            <small>Photos from an event?</small>
+            <strong>Get your pictures</strong>
+          </span>
+          <span className={styles.arrow} aria-hidden="true">→</span>
+        </Link>
+      </div>
+    </>
   );
 }
