@@ -5,6 +5,7 @@
 - Run `supabase/schema.sql` on a fresh Supabase project.
 - If the database already exists, run:
   - `supabase/phone-initial-access-codes.sql`
+  - `supabase/company-workspace.sql`
   - `supabase/production-hardening.sql`
 - Create at least one photographer in Supabase Authentication.
 - Configure the same project values locally and in Vercel:

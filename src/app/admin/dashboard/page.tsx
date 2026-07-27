@@ -26,9 +26,17 @@ interface GalleryRow {
 
 interface PhotoRow {
   id: string;
+  photographer_id: string;
   file_name: string;
   preview_path: string;
   original_path: string;
+}
+
+interface PhotographerRow {
+  id: string;
+  display_name: string;
+  email: string;
+  photo_count: number;
 }
 
 interface DashboardStats {
@@ -73,6 +81,7 @@ function DashboardScreen({
   const [creatingEvent, setCreatingEvent] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
+  const [photographers, setPhotographers] = useState<PhotographerRow[]>([]);
   const [openGalleryId, setOpenGalleryId] = useState<string | null>(null);
   const [galleryPhotos, setGalleryPhotos] = useState<Record<string, PhotoRow[]>>({});
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
@@ -109,6 +118,7 @@ function DashboardScreen({
     if (!selectedEventId) {
       setRows([]);
       setStats(EMPTY_STATS);
+      setPhotographers([]);
       return;
     }
 
@@ -136,15 +146,46 @@ function DashboardScreen({
     }
 
     const ids = allGalleries.map((gallery) => gallery.id);
-    const { data: photos } = await supabase
-      .from("gallery_photos")
-      .select("gallery_id")
-      .in("gallery_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+    const [photosResult, profilesResult] = await Promise.all([
+      supabase
+        .from("gallery_photos")
+        .select("gallery_id, photographer_id")
+        .in("gallery_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]),
+      supabase
+        .from("photographer_profiles")
+        .select("id, display_name, email")
+        .order("display_name"),
+    ]);
+
+    if (photosResult.error || profilesResult.error) {
+      setStatus(
+        `Could not load company statistics: ${
+          photosResult.error?.message ?? profilesResult.error?.message
+        }`
+      );
+    }
+
+    const photos = photosResult.data ?? [];
+    const profiles = profilesResult.data ?? [];
 
     const counts = new Map<string, number>();
-    for (const photo of photos ?? []) {
+    const photographerCounts = new Map<string, number>();
+    for (const photo of photos) {
       counts.set(photo.gallery_id, (counts.get(photo.gallery_id) ?? 0) + 1);
+      if (photo.photographer_id) {
+        photographerCounts.set(
+          photo.photographer_id,
+          (photographerCounts.get(photo.photographer_id) ?? 0) + 1
+        );
+      }
     }
+
+    setPhotographers(
+      profiles.map((profile) => ({
+        ...profile,
+        photo_count: photographerCounts.get(profile.id) ?? 0,
+      }))
+    );
 
     const galleries = term
       ? allGalleries.filter(
@@ -156,7 +197,7 @@ function DashboardScreen({
 
     setStats({
       galleries: allGalleries.length,
-      photos: photos?.length ?? 0,
+      photos: photos.length,
       paidGalleries: allGalleries.filter((gallery) => gallery.paid).length,
       paidPhotos: allGalleries.reduce(
         (total, gallery) => total + (gallery.paid ? counts.get(gallery.id) ?? 0 : 0),
@@ -187,7 +228,7 @@ function DashboardScreen({
     const { data, error } = await supabase
       .from("gallery_photos")
       .select(
-        "id, file_name:original_file_name, preview_path:preview_storage_path, original_path:original_storage_path"
+        "id, photographer_id, file_name:original_file_name, preview_path:preview_storage_path, original_path:original_storage_path"
       )
       .eq("gallery_id", row.id)
       .order("created_at", { ascending: false });
@@ -373,6 +414,31 @@ function DashboardScreen({
         </article>
       </section>
 
+      <section className={styles.teamSection} aria-labelledby="event-photographers">
+        <div className={styles.galleryHeader}>
+          <div>
+            <h2 id="event-photographers" className={styles.sectionTitle}>
+              Photographers
+            </h2>
+            <p className={styles.sectionSubtitle}>
+              Company team activity for this event only.
+            </p>
+          </div>
+        </div>
+        <div className={styles.photographerGrid}>
+          {photographers.map((photographer) => (
+            <article key={photographer.id} className={styles.photographerCard}>
+              <div>
+                <strong className={styles.photographerName}>{photographer.display_name}</strong>
+                <span className={styles.photographerEmail}>{photographer.email}</span>
+              </div>
+              <strong className={styles.photographerCount}>{photographer.photo_count}</strong>
+              <span className={styles.photographerCountLabel}>photos</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <div className={styles.card}>
         <div className={styles.cardTitle}>Event</div>
         <div className={styles.cardBody}>
@@ -529,9 +595,17 @@ function DashboardScreen({
                                     )}
                                   </div>
                                   <div className={styles.photoFooter}>
-                                    <span className={styles.fileName} title={photo.file_name}>
-                                      {photo.file_name}
-                                    </span>
+                                    <div className={styles.photoDetails}>
+                                      <span className={styles.fileName} title={photo.file_name}>
+                                        {photo.file_name}
+                                      </span>
+                                      <span className={styles.photoByline}>
+                                        Taken by{" "}
+                                        {photographers.find(
+                                          (photographer) => photographer.id === photo.photographer_id
+                                        )?.display_name ?? "Photographer"}
+                                      </span>
+                                    </div>
                                     <button
                                       type="button"
                                       onClick={() => void downloadPhotos(row, photos, photo)}

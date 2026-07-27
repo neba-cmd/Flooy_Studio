@@ -45,6 +45,70 @@
   margin-bottom: 1.25rem;
 }
 
+.teamSection {
+  margin-bottom: 1.25rem;
+}
+
+.photographerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.photographerCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.15rem 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #292929;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.photographerName,
+.photographerEmail {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photographerName {
+  color: #f0f0f0;
+  font-size: 0.9rem;
+}
+
+.photographerEmail {
+  margin-top: 0.2rem;
+  color: #8f8f8f;
+  font-size: 0.72rem;
+}
+
+.photographerCount {
+  color: #f5b942;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.photographerCountLabel {
+  grid-column: 2;
+  color: #707070;
+  font-size: 0.65rem;
+  text-align: right;
+}
+
+.photoDetails {
+  min-width: 0;
+}
+
+.photoByline {
+  display: block;
+  margin-top: 0.2rem;
+  color: #8f8f8f;
+  font-size: 0.65rem;
+}
+
 .statCard {
   display: flex;
   flex-direction: column;
