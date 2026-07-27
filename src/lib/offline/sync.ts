@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { db } from "./db";
-import { markUploading, markFailed, removeUploaded } from "./queue";
+import { markUploading, markFailed, markUploaded } from "./queue";
 
 const MAX_CONCURRENT_UPLOADS = 3;
 const RETRY_BACKOFF_MS = [2000, 5000, 15000, 30000]; // caps at 30s between retries
@@ -26,6 +26,9 @@ async function uploadOne(clientId: string) {
   try {
     if (!item.eventId || !item.galleryId) {
       throw new Error("Queued photo is missing its event or client gallery");
+    }
+    if (!item.originalBlob) {
+      throw new Error("The original photo is no longer available on this device");
     }
 
     const ext = item.fileName.split(".").pop() || "jpg";
@@ -57,7 +60,7 @@ async function uploadOne(clientId: string) {
     );
     if (insertErr) throw insertErr;
 
-    await removeUploaded(clientId);
+    await markUploaded(clientId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await markFailed(clientId, message);

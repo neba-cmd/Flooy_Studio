@@ -49,8 +49,20 @@ export async function countByStatus() {
   };
 }
 
-export async function removeUploaded(clientId: string) {
-  await db.queue.delete(clientId);
+export async function markUploaded(clientId: string) {
+  const item = await db.queue.get(clientId);
+  if (!item) return;
+
+  // Keep the small preview and metadata for the visible sent history, but
+  // release the full-resolution original from IndexedDB immediately.
+  const { originalBlob: _originalBlob, ...completed } = item;
+  void _originalBlob;
+  await db.queue.put({
+    ...completed,
+    status: "uploaded",
+    lastError: undefined,
+    updatedAt: Date.now(),
+  });
 }
 
 export async function markFailed(clientId: string, error: string) {

@@ -36,11 +36,26 @@ export function AdminAuthGate({
       try {
         const supabase = createClient();
         const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        // A missing session is the normal signed-out state, especially after
+        // moving to a new Supabase project. Redirect without logging it as an
+        // application error or making an unnecessary Auth request.
+        if (!session) {
+          if (isMounted) {
+            router.replace("/admin/login");
+            setChecked(true);
+          }
+          return;
+        }
+
+        const {
           data: { user },
           error: userError,
         } = await supabase.auth.getUser();
 
-        if (userError) {
+        if (userError && userError.name !== "AuthSessionMissingError") {
           console.error("Could not read admin session:", userError.message);
         }
 

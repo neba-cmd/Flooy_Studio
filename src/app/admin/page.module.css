@@ -246,6 +246,84 @@
   color: #f5b942;
 }
 
+.queueGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.queuePhoto {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #292929;
+  border-radius: 9px;
+  background: #121212;
+}
+
+.queueImageFrame {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.queueImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.queueStatus {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.42rem;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.queueStatusSent {
+  background: #34d399;
+  color: #07130f;
+}
+
+.queueStatusUploading {
+  background: #60a5fa;
+  color: #07111f;
+}
+
+.queueStatusWaiting {
+  background: #f5b942;
+  color: #171006;
+}
+
+.queueStatusFailed {
+  background: #f87171;
+  color: #210707;
+}
+
+.queueFileName {
+  overflow: hidden;
+  margin: 0;
+  padding: 0.45rem;
+  color: #a3a3a3;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queueEmpty {
+  margin: 1rem 0 0;
+  color: #737373;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
 @media (max-width: 520px) {
   .controlRow {
     align-items: stretch;
@@ -255,5 +333,9 @@
   .secondaryButton,
   .textInput {
     width: 100%;
+  }
+
+  .queueGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { db } from "@/lib/offline/db";
-import { enqueuePhoto, countByStatus } from "@/lib/offline/queue";
+import type { QueuedPhoto } from "@/lib/offline/db";
+import { enqueuePhoto, countByStatus, getQueueSnapshot } from "@/lib/offline/queue";
 import { startBackgroundSync, runSyncCycle } from "@/lib/offline/sync";
 
 export interface QueueCounts {
@@ -19,12 +20,22 @@ export function useUploadQueue(photographerId: string) {
     uploaded: 0,
     total: 0,
   });
+  const [items, setItems] = useState<QueuedPhoto[]>([]);
   const [isOnline, setIsOnline] = useState(() =>
     typeof navigator === "undefined" ? true : navigator.onLine
   );
 
   const refresh = useCallback(async () => {
-    setCounts(await countByStatus());
+    const [nextCounts, snapshot] = await Promise.all([countByStatus(), getQueueSnapshot()]);
+    setCounts(nextCounts);
+    const newestFirst = snapshot.slice().reverse();
+    setItems((current) => {
+      const currentSignature = current.map((item) => `${item.clientId}:${item.updatedAt}`).join("|");
+      const nextSignature = newestFirst
+        .map((item) => `${item.clientId}:${item.updatedAt}`)
+        .join("|");
+      return currentSignature === nextSignature ? current : newestFirst;
+    });
   }, []);
 
   useEffect(() => {
@@ -60,5 +71,5 @@ export function useUploadQueue(photographerId: string) {
     [photographerId, refresh]
   );
 
-  return { counts, isOnline, addPhotos, refresh, db };
+  return { counts, items, isOnline, addPhotos, refresh, db };
 }

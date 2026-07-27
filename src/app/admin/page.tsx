@@ -24,6 +24,17 @@ interface ClientGalleryRow {
   customer_phone: string;
 }
 
+function QueueThumbnail({ blob, fileName }: { blob: Blob; fileName: string }) {
+  const [url] = useState(() => URL.createObjectURL(blob));
+
+  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt={fileName} className={styles.queueImage} />
+  );
+}
+
 export default function AdminPage() {
   return (
     <AdminAuthGate>
@@ -54,7 +65,7 @@ function UploadScreen({
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(0);
-  const { counts, isOnline, addPhotos } = useUploadQueue(photographerId);
+  const { counts, items, isOnline, addPhotos } = useUploadQueue(photographerId);
 
   const selectedGallery = galleries.find((gallery) => gallery.id === selectedGalleryId);
   const canDrop = Boolean(selectedEventId && selectedGalleryId);
@@ -335,6 +346,41 @@ function UploadScreen({
             No connection — photos are saved and will upload automatically once you&apos;re back
             online.
           </p>
+        )}
+        {items.length > 0 ? (
+          <div className={styles.queueGrid} aria-label="Photo upload queue">
+            {items.map((item) => (
+              <article key={item.clientId} className={styles.queuePhoto}>
+                <div className={styles.queueImageFrame}>
+                  <QueueThumbnail blob={item.previewBlob} fileName={item.fileName} />
+                  <span
+                    className={`${styles.queueStatus} ${
+                      item.status === "uploaded"
+                        ? styles.queueStatusSent
+                        : item.status === "failed"
+                          ? styles.queueStatusFailed
+                          : item.status === "uploading"
+                            ? styles.queueStatusUploading
+                            : styles.queueStatusWaiting
+                    }`}
+                  >
+                    {item.status === "uploaded"
+                      ? "Sent"
+                      : item.status === "failed"
+                        ? "Retrying"
+                        : item.status === "uploading"
+                          ? "Uploading"
+                          : "Waiting"}
+                  </span>
+                </div>
+                <p className={styles.queueFileName} title={item.fileName}>
+                  {item.fileName}
+                </p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.queueEmpty}>Selected photos will appear here.</p>
         )}
       </section>
     </main>

@@ -9,7 +9,8 @@ export interface QueuedPhoto {
   galleryId: string;
   photographerId: string;
 
-  originalBlob: Blob;
+  // Removed after a confirmed upload so completed queue records stay small.
+  originalBlob?: Blob;
   previewBlob: Blob;
   fileName: string;
 
