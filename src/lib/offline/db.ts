@@ -9,9 +9,14 @@ export interface QueuedPhoto {
   galleryId: string;
   photographerId: string;
 
-  // Removed after a confirmed upload so completed queue records stay small.
-  originalBlob?: Blob;
-  previewBlob: Blob;
+  // ArrayBuffers are used instead of Blob/File objects because WebKit can
+  // invalidate Blob-backed IndexedDB records after the original file handle
+  // is released, producing "Error preparing Blob/File data" during upload.
+  // Original data is removed after a confirmed upload.
+  originalData?: ArrayBuffer;
+  previewData: ArrayBuffer;
+  originalType: string;
+  previewType: string;
   fileName: string;
 
   status: "queued" | "uploading" | "uploaded" | "failed";
@@ -26,9 +31,9 @@ class UploadQueueDB extends Dexie {
   queue!: Table<QueuedPhoto, string>; // primary key = clientId
 
   constructor() {
-    // A new database name prevents unfinished uploads from the retired
-    // Supabase project being sent into the fresh project.
-    super("flooy-photo-upload-queue-v2");
+    // v3 replaces WebKit-unsafe Blob records with durable ArrayBuffers.
+    // Broken v2 records are intentionally not retried.
+    super("flooy-photo-upload-queue-v3");
     this.version(1).stores({
       // Index status and createdAt so we can efficiently pull
       // "next batch to upload, oldest first" without a full scan.

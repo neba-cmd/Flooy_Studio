@@ -25,8 +25,16 @@ interface ClientGalleryRow {
   customer_phone: string;
 }
 
-function QueueThumbnail({ blob, fileName }: { blob: Blob; fileName: string }) {
-  const [url] = useState(() => URL.createObjectURL(blob));
+function QueueThumbnail({
+  data,
+  type,
+  fileName,
+}: {
+  data: ArrayBuffer;
+  type: string;
+  fileName: string;
+}) {
+  const [url] = useState(() => URL.createObjectURL(new Blob([data], { type })));
 
   useEffect(() => () => URL.revokeObjectURL(url), [url]);
 
@@ -366,7 +374,11 @@ function UploadScreen({
             {items.map((item) => (
               <article key={item.clientId} className={styles.queuePhoto}>
                 <div className={styles.queueImageFrame}>
-                  <QueueThumbnail blob={item.previewBlob} fileName={item.fileName} />
+                  <QueueThumbnail
+                    data={item.previewData}
+                    type={item.previewType}
+                    fileName={item.fileName}
+                  />
                   <span
                     className={`${styles.queueStatus} ${
                       item.status === "uploaded"

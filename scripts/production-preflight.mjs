@@ -40,6 +40,22 @@ for (const table of [
   else report.tables[table] = count ?? 0;
 }
 
+const { error: profileShapeError } = await admin
+  .from("photographer_profiles")
+  .select("id, display_name, email")
+  .limit(1);
+if (profileShapeError) {
+  failures.push(`photographer_profiles company columns: ${profileShapeError.message}`);
+}
+
+const { error: photoShapeError } = await admin
+  .from("gallery_photos")
+  .select("id, gallery_id, photographer_id")
+  .limit(1);
+if (photoShapeError) {
+  failures.push(`gallery_photos company columns: ${photoShapeError.message}`);
+}
+
 for (const bucketName of ["photo-previews", "photo-originals"]) {
   const { data, error } = await admin.storage.getBucket(bucketName);
   if (error || !data) {

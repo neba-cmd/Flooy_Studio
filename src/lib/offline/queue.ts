@@ -20,14 +20,20 @@ export async function enqueuePhoto(
 
   const clientId = crypto.randomUUID();
   const previewBlob = await createWatermarkedPreview(file);
+  const [originalData, previewData] = await Promise.all([
+    file.arrayBuffer(),
+    previewBlob.arrayBuffer(),
+  ]);
 
   const item: QueuedPhoto = {
     clientId,
     eventId,
     galleryId,
     photographerId,
-    originalBlob: file,
-    previewBlob,
+    originalData,
+    previewData,
+    originalType: file.type,
+    previewType: previewBlob.type || "image/jpeg",
     fileName: file.name,
     status: "queued",
     attempts: 0,
@@ -64,8 +70,8 @@ export async function markUploaded(clientId: string) {
 
   // Keep the small preview and metadata for the visible sent history, but
   // release the full-resolution original from IndexedDB immediately.
-  const { originalBlob: _originalBlob, ...completed } = item;
-  void _originalBlob;
+  const { originalData: _originalData, ...completed } = item;
+  void _originalData;
   await db.queue.put({
     ...completed,
     status: "uploaded",

@@ -32,27 +32,29 @@ async function uploadOne(clientId: string) {
     if (!item.eventId || !item.galleryId) {
       throw new Error("Queued photo is missing its event or client gallery");
     }
-    if (!item.originalBlob) {
+    if (!item.originalData) {
       throw new Error("The original photo is no longer available on this device");
     }
+    const originalData = item.originalData;
+    const previewData = item.previewData;
 
     const ext = safePhotoExtension({
       name: item.fileName,
-      type: item.originalBlob.type,
+      type: item.originalType,
     });
     const originalContentType = resolvePhotoMimeType({
       name: item.fileName,
-      type: item.originalBlob.type,
+      type: item.originalType,
     });
     const previewPath = `${item.galleryId}/${item.clientId}-preview.jpg`;
     const originalPath = `${item.galleryId}/${item.clientId}-original.${ext}`;
 
     const [previewUpload, originalUpload] = await Promise.all([
-      supabase.storage.from("photo-previews").upload(previewPath, item.previewBlob, {
-        contentType: "image/jpeg",
+      supabase.storage.from("photo-previews").upload(previewPath, previewData, {
+        contentType: item.previewType,
         upsert: true,
       }),
-      supabase.storage.from("photo-originals").upload(originalPath, item.originalBlob, {
+      supabase.storage.from("photo-originals").upload(originalPath, originalData, {
         contentType: originalContentType,
         upsert: true,
       }),
@@ -126,7 +128,12 @@ export function startBackgroundSync() {
   if (listenersAttached || typeof window === "undefined") return;
   listenersAttached = true;
 
-  window.addEventListener("online", () => runSyncCycle());
-  setInterval(() => runSyncCycle(), 4000);
-  runSyncCycle();
+  const syncSafely = () => {
+    void runSyncCycle().catch((error) => {
+      console.error("Background photo sync failed:", error);
+    });
+  };
+  window.addEventListener("online", syncSafely);
+  setInterval(syncSafely, 4000);
+  syncSafely();
 }
