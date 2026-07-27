@@ -13,11 +13,35 @@ export async function createWatermarkedPreview(
 ): Promise<Blob> {
   const { maxDimension = 1600, quality = 0.72, watermarkText = "PREVIEW" } = opts;
 
-  const bitmap = await createImageBitmap(file);
+  let source: CanvasImageSource;
+  let sourceWidth: number;
+  let sourceHeight: number;
+  let cleanup: () => void;
 
-  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
+  try {
+    const bitmap = await createImageBitmap(file);
+    source = bitmap;
+    sourceWidth = bitmap.width;
+    sourceHeight = bitmap.height;
+    cleanup = () => bitmap.close();
+  } catch {
+    // iOS Safari can display camera-library HEIC images even when
+    // createImageBitmap cannot decode them. An <img> fallback uses WebKit's
+    // native image decoder and keeps the upload flow working.
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.decoding = "async";
+    image.src = objectUrl;
+    await image.decode();
+    source = image;
+    sourceWidth = image.naturalWidth;
+    sourceHeight = image.naturalHeight;
+    cleanup = () => URL.revokeObjectURL(objectUrl);
+  }
+
+  const scale = Math.min(1, maxDimension / Math.max(sourceWidth, sourceHeight));
+  const width = Math.round(sourceWidth * scale);
+  const height = Math.round(sourceHeight * scale);
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -25,7 +49,7 @@ export async function createWatermarkedPreview(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D context unavailable");
 
-  ctx.drawImage(bitmap, 0, 0, width, height);
+  ctx.drawImage(source, 0, 0, width, height);
 
   // Diagonal repeated watermark
   ctx.save();
@@ -48,7 +72,7 @@ export async function createWatermarkedPreview(
   }
   ctx.restore();
 
-  bitmap.close();
+  cleanup();
 
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, "image/jpeg", quality)

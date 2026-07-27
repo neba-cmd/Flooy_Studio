@@ -6,6 +6,8 @@ import {
 } from "@/lib/photo-delivery/validation";
 import { db } from "./db";
 import { markUploading, markFailed, markUploaded } from "./queue";
+import { uploadOriginalResumably } from "./resumable-upload";
+import { createWatermarkedPreview } from "./image-processing";
 
 const MAX_CONCURRENT_UPLOADS = 3;
 const RETRY_BACKOFF_MS = [2000, 5000, 15000, 30000]; // caps at 30s between retries
@@ -13,6 +15,69 @@ const STALE_UPLOAD_MS = 2 * 60 * 1000;
 
 let syncRunning = false;
 let listenersAttached = false;
+
+/**
+ * iOS Safari path: stream the original File directly to resumable Storage
+ * instead of first cloning a potentially large camera photo into IndexedDB.
+ */
+export async function uploadPhotoDirect(
+  file: File,
+  eventId: string,
+  galleryId: string,
+  photographerId: string
+) {
+  const supabase = createClient();
+  const clientId = crypto.randomUUID();
+  const previewBlob = await createWatermarkedPreview(file);
+  const ext = safePhotoExtension(file);
+  const originalContentType = resolvePhotoMimeType(file);
+  const previewPath = `${galleryId}/${clientId}-preview.jpg`;
+  const originalPath = `${galleryId}/${clientId}-original.${ext}`;
+
+  const [previewUpload] = await Promise.all([
+    supabase.storage.from("photo-previews").upload(previewPath, previewBlob, {
+      contentType: "image/jpeg",
+      upsert: true,
+    }),
+    uploadOriginalResumably(
+      supabase,
+      "photo-originals",
+      originalPath,
+      file,
+      originalContentType
+    ),
+  ]);
+  if (previewUpload.error) throw previewUpload.error;
+
+  const { error } = await supabase.from("gallery_photos").upsert(
+    {
+      upload_key: clientId,
+      gallery_id: galleryId,
+      photographer_id: photographerId,
+      original_file_name: file.name,
+      preview_storage_path: previewPath,
+      original_storage_path: originalPath,
+      status: "ready",
+    },
+    { onConflict: "upload_key" }
+  );
+  if (error) throw error;
+
+  await db.queue.put({
+    clientId,
+    eventId,
+    galleryId,
+    photographerId,
+    previewData: await previewBlob.arrayBuffer(),
+    originalType: file.type,
+    previewType: "image/jpeg",
+    fileName: file.name,
+    status: "uploaded",
+    attempts: 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+}
 
 /**
  * Uploads a single queued item: both blobs to Storage, then a row
@@ -49,18 +114,20 @@ async function uploadOne(clientId: string) {
     const previewPath = `${item.galleryId}/${item.clientId}-preview.jpg`;
     const originalPath = `${item.galleryId}/${item.clientId}-original.${ext}`;
 
-    const [previewUpload, originalUpload] = await Promise.all([
+    const [previewUpload] = await Promise.all([
       supabase.storage.from("photo-previews").upload(previewPath, previewData, {
         contentType: item.previewType,
         upsert: true,
       }),
-      supabase.storage.from("photo-originals").upload(originalPath, originalData, {
-        contentType: originalContentType,
-        upsert: true,
-      }),
+      uploadOriginalResumably(
+        supabase,
+        "photo-originals",
+        originalPath,
+        originalData,
+        originalContentType
+      ),
     ]);
     if (previewUpload.error) throw previewUpload.error;
-    if (originalUpload.error) throw originalUpload.error;
 
     const { error: insertErr } = await supabase.from("gallery_photos").upsert(
       {

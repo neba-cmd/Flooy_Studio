@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { db } from "@/lib/offline/db";
 import type { QueuedPhoto } from "@/lib/offline/db";
 import { enqueuePhoto, countByStatus, getQueueSnapshot } from "@/lib/offline/queue";
-import { startBackgroundSync, runSyncCycle } from "@/lib/offline/sync";
+import { startBackgroundSync, runSyncCycle, uploadPhotoDirect } from "@/lib/offline/sync";
 
 export interface QueueCounts {
   queued: number;
@@ -66,9 +66,18 @@ export function useUploadQueue(photographerId: string) {
     async (files: File[], eventId: string, galleryId: string) => {
       const errors: string[] = [];
       let added = 0;
+      const useDirectMobileUpload =
+        typeof navigator !== "undefined" &&
+        (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)) &&
+        navigator.onLine;
       for (const file of files) {
         try {
-          await enqueuePhoto(file, eventId, galleryId, photographerId);
+          if (useDirectMobileUpload) {
+            await uploadPhotoDirect(file, eventId, galleryId, photographerId);
+          } else {
+            await enqueuePhoto(file, eventId, galleryId, photographerId);
+          }
           added += 1;
         } catch (error) {
           errors.push(
@@ -77,7 +86,7 @@ export function useUploadQueue(photographerId: string) {
         }
       }
       await refresh();
-      if (added) void runSyncCycle();
+      if (added && !useDirectMobileUpload) void runSyncCycle();
       return { added, errors };
     },
     [photographerId, refresh]
