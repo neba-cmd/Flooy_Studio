@@ -156,13 +156,16 @@ export default function EventPhotosPage() {
       <div className={styles.row}>
         <input
           value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          onChange={(e) =>
+            setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))
+          }
           onKeyDown={(e) => e.key === "Enter" && lookup()}
-          placeholder="6-digit code"
-          inputMode="numeric"
+          placeholder="Example: DAN482"
+          inputMode="text"
+          autoCapitalize="characters"
           autoComplete="one-time-code"
           maxLength={6}
-          pattern="[0-9]{6}"
+          pattern="[A-Z0-9]{6}"
           className={styles.input}
         />
         <button type="button" onClick={lookup} disabled={loading || !code.trim()} className={styles.button}>

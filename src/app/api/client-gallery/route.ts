@@ -4,7 +4,8 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 
 export async function POST(req: NextRequest) {
   const { code } = await req.json().catch(() => ({}));
-  if (typeof code !== "string" || !code.trim() || !/^\d{6}$/.test(code.trim())) {
+  const normalizedCode = typeof code === "string" ? code.trim().toUpperCase() : "";
+  if (!/^[A-Z0-9]{6}$/.test(normalizedCode)) {
     return NextResponse.json({ error: "Enter a valid gallery code." }, { status: 400 });
   }
 
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
   const { data: gallery, error: galleryError } = await admin
     .from("customer_galleries")
     .select("id, customer_name, access_code, is_paid")
-    .eq("access_code", code.trim().toUpperCase())
+    .eq("access_code", normalizedCode)
     .maybeSingle();
 
   if (galleryError) {

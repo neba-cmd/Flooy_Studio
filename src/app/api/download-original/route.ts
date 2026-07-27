@@ -11,12 +11,11 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
  */
 export async function POST(req: NextRequest) {
   const { code, photoId } = await req.json().catch(() => ({}));
+  const normalizedCode = typeof code === "string" ? code.trim().toUpperCase() : "";
 
   if (
-    typeof code !== "string" ||
     typeof photoId !== "string" ||
-    !code.trim() ||
-    !/^\d{6}$/.test(code.trim()) ||
+    !/^[A-Z0-9]{6}$/.test(normalizedCode) ||
     !/^[0-9a-f-]{36}$/i.test(photoId)
   ) {
     return NextResponse.json({ error: "Missing code or photoId" }, { status: 400 });
@@ -33,8 +32,6 @@ export async function POST(req: NextRequest) {
   }
 
   const adminClient = createClient(url, serviceRoleKey, { auth: { persistSession: false } });
-  const normalizedCode = code.trim().toUpperCase();
-
   const { data: gallery, error: galleryError } = await adminClient
     .from("customer_galleries")
     .select("id, is_paid")

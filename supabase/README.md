@@ -24,7 +24,7 @@ photographer_profiles
 ```
 
 Each `customer_galleries` row contains the customer's name, email, phone,
-six-digit access code, and payment status. Each `gallery_photos` row contains
+short name-based access code (for example `DAN482`), and payment status. Each `gallery_photos` row contains
 clear filenames and private Storage paths, making JSON/CSV backups easy to
 understand and restore.
 

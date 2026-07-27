@@ -35,7 +35,7 @@ create table public.customer_galleries (
     and customer_email ~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'
   ),
   customer_phone text not null check (length(trim(customer_phone)) between 7 and 30),
-  access_code text not null unique check (access_code ~ '^[0-9]{6}$'),
+  access_code text not null unique check (access_code ~ '^[A-Z0-9]{6}$'),
   is_paid boolean not null default false,
   paid_at timestamptz,
   created_at timestamptz not null default now(),
@@ -58,18 +58,24 @@ create table public.gallery_photos (
   created_at timestamptz not null default now()
 );
 
--- Generate an easy six-digit customer code and retry on the rare collision.
-create or replace function public.generate_gallery_access_code()
+-- Generate a short code using three characters from the customer's name and
+-- three digits, for example DAN482.
+create or replace function public.generate_gallery_access_code(p_customer_name text)
 returns text
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
+  clean_name text;
+  name_prefix text;
   candidate text;
 begin
+  clean_name := regexp_replace(upper(coalesce(p_customer_name, '')), '[^A-Z0-9]', '', 'g');
+  name_prefix := rpad(substr(coalesce(nullif(clean_name, ''), 'PIC'), 1, 3), 3, 'X');
+
   loop
-    candidate := lpad(floor(random() * 1000000)::integer::text, 6, '0');
+    candidate := name_prefix || lpad(floor(random() * 1000)::integer::text, 3, '0');
     exit when not exists (
       select 1 from public.customer_galleries where access_code = candidate
     );
@@ -78,8 +84,23 @@ begin
 end;
 $$;
 
-alter table public.customer_galleries
-  alter column access_code set default public.generate_gallery_access_code();
+create or replace function public.set_gallery_access_code()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.access_code is null or trim(new.access_code) = '' then
+    new.access_code := public.generate_gallery_access_code(new.customer_name);
+  end if;
+  return new;
+end;
+$$;
+
+create trigger set_customer_gallery_access_code
+before insert on public.customer_galleries
+for each row execute function public.set_gallery_access_code();
 
 -- Automatically create the photographer profile after an Auth user is added.
 create or replace function public.create_photographer_profile()
@@ -123,8 +144,8 @@ begin
 end;
 $$;
 
-revoke all on function public.generate_gallery_access_code() from public;
-grant execute on function public.generate_gallery_access_code() to authenticated;
+revoke all on function public.generate_gallery_access_code(text) from public;
+grant execute on function public.generate_gallery_access_code(text) to authenticated;
 grant execute on function public.ensure_photographer_profile() to authenticated;
 
 -- Backup-friendly indexes
@@ -266,5 +287,5 @@ using (
 );
 
 -- No anonymous table or Storage policies are created. Customer access goes
--- only through the server routes, which validate the six-digit code and sign
+-- only through the server routes, which validate the six-character code and sign
 -- individual private files for a short time.
