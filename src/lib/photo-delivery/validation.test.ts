@@ -15,9 +15,10 @@ describe("gallery access codes", () => {
     expect(normalizeAccessCode("sa$r 19!")).toBe("SAR19");
   });
 
-  it("requires one initial followed by four digits", () => {
+  it("accepts current five-character and legacy six-character codes", () => {
     expect(isValidAccessCode("n4821")).toBe(true);
     expect(isValidAccessCode("N-4821")).toBe(true);
+    expect(isValidAccessCode("DAN482")).toBe(true);
     expect(isValidAccessCode("4821")).toBe(false);
     expect(isValidAccessCode("NN482")).toBe(false);
     expect(isValidAccessCode(null)).toBe(false);

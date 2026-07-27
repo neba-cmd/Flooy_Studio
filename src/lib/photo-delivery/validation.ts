@@ -1,4 +1,6 @@
-export const ACCESS_CODE_PATTERN = /^[A-Z][0-9]{4}$/;
+// Accept the current initial + last-four format (N4821) and legacy six-character
+// codes so existing customer galleries keep working after the migration.
+export const ACCESS_CODE_PATTERN = /^(?:[A-Z][0-9]{4}|[A-Z0-9]{6})$/;
 export const PHOTO_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export const MAX_PHOTO_BYTES = 50 * 1024 * 1024;
@@ -23,7 +25,7 @@ const EXTENSION_BY_MIME: Record<string, string> = {
 
 export function normalizeAccessCode(value: unknown) {
   return typeof value === "string"
-    ? value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5)
+    ? value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6)
     : "";
 }
 
