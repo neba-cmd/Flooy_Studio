@@ -20,17 +20,8 @@ interface ClientGalleryRow {
   event_id: string;
   name: string;
   access_code: string;
-}
-
-function generateAccessCode(name: string) {
-  const base =
-    name
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9]+/g, "")
-      .slice(0, 4) || "GALL";
-  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `${base}${suffix}`;
+  customer_email: string;
+  customer_phone: string;
 }
 
 export default function AdminPage() {
@@ -55,6 +46,8 @@ function UploadScreen({
   const [selectedEventId, setSelectedEventId] = useState("");
   const [selectedGalleryId, setSelectedGalleryId] = useState("");
   const [newGalleryName, setNewGalleryName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadingGalleries, setLoadingGalleries] = useState(false);
   const [creatingGallery, setCreatingGallery] = useState(false);
@@ -72,8 +65,8 @@ function UploadScreen({
 
     const supabase = createClient();
     const { data, error: eventError } = await supabase
-      .from("events")
-      .select("id, name, starts_at")
+      .from("photo_events")
+      .select("id, name:event_name, starts_at:event_date")
       .order("created_at", { ascending: false })
       .limit(100);
 
@@ -100,8 +93,8 @@ function UploadScreen({
 
     const supabase = createClient();
     const { data, error: galleryError } = await supabase
-      .from("client_galleries")
-      .select("id, event_id, name, access_code")
+      .from("customer_galleries")
+      .select("id, event_id, name:customer_name, access_code, customer_email, customer_phone")
       .eq("event_id", eventId)
       .order("created_at", { ascending: false })
       .limit(200);
@@ -135,7 +128,11 @@ function UploadScreen({
       return;
     }
     if (!name) {
-      setStatus("Enter a client gallery name first.");
+      setStatus("Enter the customer's name first.");
+      return;
+    }
+    if (!customerEmail.trim() || !customerPhone.trim()) {
+      setStatus("Enter the customer's email and phone number.");
       return;
     }
 
@@ -145,38 +142,39 @@ function UploadScreen({
 
     const supabase = createClient();
     let created: ClientGalleryRow | null = null;
-    let lastError: { message?: string } | null = null;
-
+    let createMessage = "Could not create the customer gallery.";
     for (let attempt = 0; attempt < 5 && !created; attempt += 1) {
-      const accessCode = generateAccessCode(name);
       const { data, error: createError } = await supabase
-        .from("client_galleries")
+        .from("customer_galleries")
         .insert({
           event_id: selectedEventId,
-          photographer_id: photographerId,
-          name,
-          access_code: accessCode,
+          customer_name: name,
+          customer_email: customerEmail.trim().toLowerCase(),
+          customer_phone: customerPhone.trim(),
         })
-        .select("id, event_id, name, access_code")
-        .single();
-
-      if (!createError && data) {
-        created = data;
-      } else {
-        lastError = createError;
+        .select(
+          "id, event_id, name:customer_name, access_code, customer_email, customer_phone"
+        )
+        .single<ClientGalleryRow>();
+      if (data) created = data;
+      if (createError) {
+        createMessage = createError.message;
+        if (createError.code !== "23505") break;
       }
     }
 
     setCreatingGallery(false);
 
     if (!created) {
-      setError(lastError?.message ?? "Could not create the client gallery.");
+      setError(createMessage);
       return;
     }
 
     setGalleries((prev) => [created, ...prev]);
     setSelectedGalleryId(created.id);
     setNewGalleryName("");
+    setCustomerEmail("");
+    setCustomerPhone("");
     setStatus(`Client gallery created. Access code: ${created.access_code}`);
   }
 
@@ -232,7 +230,7 @@ function UploadScreen({
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Client Gallery</h2>
+        <h2 className={styles.cardTitle}>Customer Gallery</h2>
         <div className={styles.controlRow}>
           <select
             value={selectedGalleryId}
@@ -241,7 +239,7 @@ function UploadScreen({
             className={styles.select}
           >
             <option value="">
-              {loadingGalleries ? "Loading galleries..." : "Select client gallery"}
+              {loadingGalleries ? "Loading galleries..." : "Select customer gallery"}
             </option>
             {galleries.map((gallery) => (
               <option key={gallery.id} value={gallery.id}>
@@ -254,19 +252,39 @@ function UploadScreen({
           <input
             value={newGalleryName}
             onChange={(e) => setNewGalleryName(e.target.value)}
-            placeholder="Client or family name"
+            placeholder="Customer's full name"
             disabled={!selectedEventId}
             className={styles.textInput}
           />
-          <button
-            type="button"
-            onClick={() => void createGallery()}
-            disabled={!selectedEventId || creatingGallery}
-            className={styles.secondaryButton}
-          >
-            {creatingGallery ? "Creating..." : "Create gallery"}
-          </button>
         </div>
+        <div className={styles.controlRow}>
+          <input
+            value={customerEmail}
+            onChange={(e) => setCustomerEmail(e.target.value)}
+            placeholder="Email address"
+            type="email"
+            autoComplete="email"
+            disabled={!selectedEventId}
+            className={styles.textInput}
+          />
+          <input
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            placeholder="Phone number"
+            type="tel"
+            autoComplete="tel"
+            disabled={!selectedEventId}
+            className={styles.textInput}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => void createGallery()}
+          disabled={!selectedEventId || creatingGallery}
+          className={styles.createCustomerButton}
+        >
+          {creatingGallery ? "Creating customer…" : "Create customer & generate code"}
+        </button>
         {selectedGallery && (
           <p className={styles.accessCode}>
             Access code: <strong>{selectedGallery.access_code}</strong>

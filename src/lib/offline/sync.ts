@@ -11,7 +11,7 @@ let listenersAttached = false;
 
 /**
  * Uploads a single queued item: both blobs to Storage, then a row
- * to `photos`. Uses clientId as an idempotency key so if the
+ * to `gallery_photos`. Uses clientId as an idempotency key so if the
  * network drops mid-upload and we retry, we never create dupes —
  * Storage overwrites are safe (same path) and the DB insert uses
  * upsert on the unique client_id column.
@@ -29,35 +29,31 @@ async function uploadOne(clientId: string) {
     }
 
     const ext = item.fileName.split(".").pop() || "jpg";
-    // Match the storage RLS policy used in the Supabase schema by placing the
-    // event id in the second folder segment of the object path.
-    const previewPath = `${item.galleryId}/${item.eventId}/${item.clientId}-preview.jpg`;
-    const originalPath = `${item.galleryId}/${item.eventId}/${item.clientId}-original.${ext}`;
+    const previewPath = `${item.galleryId}/${item.clientId}-preview.jpg`;
+    const originalPath = `${item.galleryId}/${item.clientId}-original.${ext}`;
 
     const [previewUpload, originalUpload] = await Promise.all([
-      supabase.storage.from("previews").upload(previewPath, item.previewBlob, {
+      supabase.storage.from("photo-previews").upload(previewPath, item.previewBlob, {
         contentType: "image/jpeg",
         upsert: true,
       }),
-      supabase.storage.from("originals").upload(originalPath, item.originalBlob, {
+      supabase.storage.from("photo-originals").upload(originalPath, item.originalBlob, {
         upsert: true,
       }),
     ]);
     if (previewUpload.error) throw previewUpload.error;
     if (originalUpload.error) throw originalUpload.error;
 
-    const { error: insertErr } = await supabase.from("photos").upsert(
+    const { error: insertErr } = await supabase.from("gallery_photos").upsert(
       {
-        client_id: item.clientId,
-        event_id: item.eventId,
+        upload_key: item.clientId,
         gallery_id: item.galleryId,
-        photographer_id: item.photographerId,
-        file_name: item.fileName,
-        preview_path: previewPath,
-        original_path: originalPath,
-        upload_status: "uploaded",
+        original_file_name: item.fileName,
+        preview_storage_path: previewPath,
+        original_storage_path: originalPath,
+        status: "ready",
       },
-      { onConflict: "client_id" }
+      { onConflict: "upload_key" }
     );
     if (insertErr) throw insertErr;
 

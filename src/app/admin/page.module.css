@@ -96,6 +96,24 @@
   cursor: not-allowed;
 }
 
+.createCustomerButton {
+  width: 100%;
+  margin-top: 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: #f5b942;
+  padding: 0.8rem 1rem;
+  color: #161006;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.createCustomerButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .input {
   width: 100%;
   margin-bottom: 1.5rem;

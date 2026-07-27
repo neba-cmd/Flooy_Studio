@@ -25,7 +25,9 @@ class UploadQueueDB extends Dexie {
   queue!: Table<QueuedPhoto, string>; // primary key = clientId
 
   constructor() {
-    super("photo-delivery-queue");
+    // A new database name prevents unfinished uploads from the retired
+    // Supabase project being sent into the fresh project.
+    super("flooy-photo-upload-queue-v2");
     this.version(1).stores({
       // Index status and createdAt so we can efficiently pull
       // "next batch to upload, oldest first" without a full scan.

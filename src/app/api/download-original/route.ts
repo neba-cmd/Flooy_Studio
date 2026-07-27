@@ -16,8 +16,7 @@ export async function POST(req: NextRequest) {
     typeof code !== "string" ||
     typeof photoId !== "string" ||
     !code.trim() ||
-    code.length > 64 ||
-    !/^[a-z0-9-]+$/i.test(code.trim()) ||
+    !/^\d{6}$/.test(code.trim()) ||
     !/^[0-9a-f-]{36}$/i.test(photoId)
   ) {
     return NextResponse.json({ error: "Missing code or photoId" }, { status: 400 });
@@ -37,8 +36,8 @@ export async function POST(req: NextRequest) {
   const normalizedCode = code.trim().toUpperCase();
 
   const { data: gallery, error: galleryError } = await adminClient
-    .from("client_galleries")
-    .select("id, paid")
+    .from("customer_galleries")
+    .select("id, is_paid")
     .eq("access_code", normalizedCode)
     .maybeSingle();
 
@@ -52,7 +51,7 @@ export async function POST(req: NextRequest) {
   if (!gallery) {
     return NextResponse.json({ error: "This gallery could not be found." }, { status: 404 });
   }
-  if (!gallery.paid) {
+  if (!gallery.is_paid) {
     return NextResponse.json(
       { error: "This gallery has not been unlocked for downloads yet." },
       { status: 403 }
@@ -60,8 +59,8 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: photo, error: photoError } = await adminClient
-    .from("photos")
-    .select("original_path, file_name, upload_status")
+    .from("gallery_photos")
+    .select("original_storage_path, original_file_name, status")
     .eq("id", photoId)
     .eq("gallery_id", gallery.id)
     .maybeSingle();
@@ -73,7 +72,7 @@ export async function POST(req: NextRequest) {
       { status: 503 }
     );
   }
-  if (!photo?.original_path || photo.upload_status !== "uploaded") {
+  if (!photo?.original_storage_path || photo.status !== "ready") {
     return NextResponse.json(
       { error: "This photo is still being prepared. Please try again shortly." },
       { status: 409 }
@@ -81,16 +80,16 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: signed, error: signError } = await adminClient.storage
-    .from("originals")
-    .createSignedUrl(photo.original_path, 600, {
-      download: photo.file_name || true,
+    .from("photo-originals")
+    .createSignedUrl(photo.original_storage_path, 600, {
+      download: photo.original_file_name || true,
     });
 
   if (signError || !signed) {
     console.error(
       "[download-original] Storage signing failed",
       signError?.message ?? "No signed URL returned",
-      { photoId, path: photo.original_path }
+      { photoId, path: photo.original_storage_path }
     );
     return NextResponse.json(
       { error: "The photo is available, but the download could not start. Please try again." },
@@ -99,7 +98,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { url: signed.signedUrl, fileName: photo.file_name },
+    { url: signed.signedUrl, fileName: photo.original_file_name },
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }

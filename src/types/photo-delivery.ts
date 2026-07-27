@@ -1,39 +1,38 @@
-export interface Event {
+export interface PhotographerProfile {
   id: string;
-  photographer_id: string;
-  name: string;
-  starts_at: string | null;
-  ends_at: string | null;
-  location: string | null;
-  status: string;
+  display_name: string;
   created_at: string;
-  updated_at: string;
 }
 
-export interface ClientGallery {
+export interface PhotoEvent {
+  id: string;
+  owner_id: string;
+  event_name: string;
+  event_date: string | null;
+  venue: string | null;
+  created_at: string;
+}
+
+export interface CustomerGallery {
   id: string;
   event_id: string;
-  photographer_id: string;
-  name: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
   access_code: string;
-  notes: string | null;
-  paid: boolean;
+  is_paid: boolean;
   paid_at: string | null;
-  paid_by: string | null;
   created_at: string;
-  updated_at: string;
 }
 
-export interface Photo {
+export interface GalleryPhoto {
   id: string;
-  client_id: string;
-  event_id: string;
+  upload_key: string;
   gallery_id: string;
-  photographer_id: string;
-  file_name: string;
-  preview_path: string;
-  original_path: string;
-  upload_status: string;
-  taken_at: string | null;
+  original_file_name: string;
+  preview_storage_path: string;
+  original_storage_path: string;
+  status: "uploading" | "ready" | "failed";
+  captured_at: string | null;
   created_at: string;
 }

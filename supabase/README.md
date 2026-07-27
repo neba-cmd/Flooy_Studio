@@ -1,33 +1,48 @@
-# Supabase Setup
+# Fresh Supabase setup
 
-The application models photo delivery as:
+1. Create a new Supabase project.
+2. Open **SQL Editor**, paste all of `schema.sql`, and run it once.
+3. Open **Authentication → Users** and create the photographer login.
+4. Copy the new project values into `.env.local` and the production host:
 
-1. Event
-2. Client Gallery
-3. Photo
+```text
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
 
+`SUPABASE_SERVICE_ROLE_KEY` is server-only. Never prefix it with
+`NEXT_PUBLIC_`.
 
-The schema creates:
+## Data structure
 
-- `events`
-- `client_galleries`
-- `photos`
-- storage buckets: `previews`, `originals`
-- RLS policies for authenticated photographers
-- public RPC: `get_client_gallery_by_access_code`
-- authenticated RPC: `ensure_photographer_profile`
+```text
+photographer_profiles
+└── photo_events
+    └── customer_galleries
+        └── gallery_photos
+```
 
-After creating a Supabase Auth user, the app will create the matching
-`photographers` profile row automatically on first admin login through
-`ensure_photographer_profile`.
+Each `customer_galleries` row contains the customer's name, email, phone,
+six-digit access code, and payment status. Each `gallery_photos` row contains
+clear filenames and private Storage paths, making JSON/CSV backups easy to
+understand and restore.
 
-Required deployment environment variables:
+Storage uses two private buckets:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (server-only; required for customer downloads)
+- `photo-previews`
+- `photo-originals`
 
-Never prefix the service-role key with `NEXT_PUBLIC_` or expose it in browser
-code. The `/api/download-original` server route uses it only after verifying
-the access code, paid gallery status, and requested photo membership. It then
-creates a short-lived, single-file download URL.
+Customers never receive direct database or bucket access. Server routes verify
+their code and issue short-lived links to individual files.
+
+## Backup
+
+With the environment variables configured, run:
+
+```bash
+node --env-file=.env.local scripts/reset-photo-delivery-data.mjs backup
+```
+
+Backups are written under `supabase/backups/` and include readable JSON,
+downloaded photo files, a file count, byte count, and SHA-256 hashes.

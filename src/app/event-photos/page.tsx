@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import styles from "./page.module.css";
 
 interface GalleryPhoto {
   photo_id: string;
-  preview_path: string;
-  original_path: string | null;
+  preview_url: string | null;
   taken_at: string;
 }
 
@@ -40,29 +38,27 @@ export default function EventPhotosPage() {
     setActiveCode("");
     setEmptyGalleryCode("");
     const normalizedCode = code.trim().toUpperCase();
-    const supabase = createClient();
+    const response = await fetch("/api/client-gallery", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: normalizedCode }),
+      cache: "no-store",
+    }).catch(() => null);
+    const result = response
+      ? ((await response.json().catch(() => null)) as {
+          error?: string;
+          gallery?: { paid: boolean };
+          photos?: GalleryPhoto[];
+        } | null)
+      : null;
 
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "get_client_gallery_by_access_code",
-      {
-        p_code: normalizedCode,
-      }
-    );
-
-    let rows: GalleryPhoto[] = [];
-    let galleryPaid = false;
-
-    if (!rpcError && rpcData && rpcData.length > 0) {
-      galleryPaid = Boolean(rpcData[0].paid);
-      rows = rpcData.filter((r: { photo_id: string | null }) => r.photo_id) as GalleryPhoto[];
-    }
-
-    if (rpcError || !rpcData?.length) {
+    if (!response?.ok || !result?.gallery) {
       setLoading(false);
-      setError("No gallery was found for that code.");
+      setError(result?.error ?? "The connection was interrupted. Please try again.");
       return;
     }
 
+    const rows = result.photos ?? [];
     setLoading(false);
 
     if (rows.length === 0) {
@@ -70,23 +66,17 @@ export default function EventPhotosPage() {
       return;
     }
 
-    setPaid(galleryPaid);
+    setPaid(Boolean(result.gallery.paid));
     setPhotos(rows);
     setActiveCode(normalizedCode);
 
-    const urls: Record<string, string> = {};
-    const { data: signedPreviews, error: signingError } = await supabase.storage
-      .from("previews")
-      .createSignedUrls(rows.map((photo) => photo.preview_path), 3600);
-    if (signingError) {
-      setError("The gallery opened, but previews could not be loaded.");
-      return;
-    }
-    for (let index = 0; index < rows.length; index += 1) {
-      const signedUrl = signedPreviews?.[index]?.signedUrl;
-      if (signedUrl) urls[rows[index].photo_id] = signedUrl;
-    }
-    setPreviewUrls(urls);
+    setPreviewUrls(
+      Object.fromEntries(
+        rows
+          .filter((photo) => photo.preview_url)
+          .map((photo) => [photo.photo_id, photo.preview_url as string])
+      )
+    );
   }
 
   // Originals live in a private bucket. The server verifies the active access
@@ -166,9 +156,13 @@ export default function EventPhotosPage() {
       <div className={styles.row}>
         <input
           value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
           onKeyDown={(e) => e.key === "Enter" && lookup()}
-          placeholder="Enter your access code"
+          placeholder="6-digit code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          pattern="[0-9]{6}"
           className={styles.input}
         />
         <button type="button" onClick={lookup} disabled={loading || !code.trim()} className={styles.button}>

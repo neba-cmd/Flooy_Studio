@@ -20,6 +20,8 @@ interface GalleryRow {
   paid: boolean;
   paid_at: string | null;
   photo_count: number;
+  customer_email: string;
+  customer_phone: string;
 }
 
 interface PhotoRow {
@@ -86,8 +88,8 @@ function DashboardScreen({
     setLoadingEvents(true);
     const supabase = createClient();
     const { data, error } = await supabase
-      .from("events")
-      .select("id, name, starts_at")
+      .from("photo_events")
+      .select("id, name:event_name, starts_at:event_date")
       .order("created_at", { ascending: false })
       .limit(100);
 
@@ -115,8 +117,10 @@ function DashboardScreen({
     const supabase = createClient();
 
     const { data: allGalleries, error: allGalleriesError } = await supabase
-      .from("client_galleries")
-      .select("id, event_id, name, access_code, paid, paid_at")
+      .from("customer_galleries")
+      .select(
+        "id, event_id, name:customer_name, access_code, paid:is_paid, paid_at, customer_email, customer_phone"
+      )
       .eq("event_id", selectedEventId)
       .order("created_at", { ascending: false })
       .limit(500);
@@ -133,7 +137,7 @@ function DashboardScreen({
 
     const ids = allGalleries.map((gallery) => gallery.id);
     const { data: photos } = await supabase
-      .from("photos")
+      .from("gallery_photos")
       .select("gallery_id")
       .in("gallery_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
 
@@ -181,8 +185,10 @@ function DashboardScreen({
     setStatus(null);
     const supabase = createClient();
     const { data, error } = await supabase
-      .from("photos")
-      .select("id, file_name, preview_path, original_path")
+      .from("gallery_photos")
+      .select(
+        "id, file_name:original_file_name, preview_path:preview_storage_path, original_path:original_storage_path"
+      )
       .eq("gallery_id", row.id)
       .order("created_at", { ascending: false });
 
@@ -197,7 +203,7 @@ function DashboardScreen({
 
     if (photos.length) {
       const { data: signed, error: signError } = await supabase.storage
-        .from("previews")
+        .from("photo-previews")
         .createSignedUrls(
           photos.map((photo) => photo.preview_path),
           3600
@@ -225,7 +231,7 @@ function DashboardScreen({
     setStatus(null);
     const supabase = createClient();
     const { data, error } = await supabase.storage
-      .from("originals")
+      .from("photo-originals")
       .createSignedUrls(
         selected.map((item) => item.original_path),
         300,
@@ -279,9 +285,9 @@ function DashboardScreen({
     setStatus(null);
     const supabase = createClient();
     const { data, error } = await supabase
-      .from("events")
-      .insert({ name, photographer_id: photographerId })
-      .select("id, name, starts_at")
+      .from("photo_events")
+      .insert({ event_name: name, owner_id: photographerId })
+      .select("id, name:event_name, starts_at:event_date")
       .single();
 
     setCreatingEvent(false);
@@ -304,11 +310,10 @@ function DashboardScreen({
     const paidAt = nextPaid ? new Date().toISOString() : null;
 
     const { error } = await supabase
-      .from("client_galleries")
+      .from("customer_galleries")
       .update({
-        paid: nextPaid,
+        is_paid: nextPaid,
         paid_at: paidAt,
-        paid_by: nextPaid ? photographerId : null,
       })
       .eq("id", row.id);
 
@@ -489,6 +494,9 @@ function DashboardScreen({
                               <p className={styles.expandedMeta}>
                                 {row.photo_count} {row.photo_count === 1 ? "photo" : "photos"} · Code{" "}
                                 {row.access_code}
+                              </p>
+                              <p className={styles.expandedMeta}>
+                                {row.customer_phone} · {row.customer_email}
                               </p>
                             </div>
                             <button
