@@ -1,26 +1,13 @@
-import {
-  Heading,
-  Text,
-  Button,
-  Avatar,
-  RevealFx,
-  Column,
-  Badge,
-  Row,
-  Schema,
-  Meta,
-} from "@once-ui-system/core";
+import { Column, Meta, Schema } from "@once-ui-system/core";
 import Link from "next/link";
-import { home, about, person, baseURL } from "@/resources";
-import { Mailchimp } from "@/components";
-import { Projects } from "@/components/work/Projects";
+import { about, baseURL, home, person } from "@/resources";
 import styles from "./page.module.css";
 
 export async function generateMetadata() {
   return Meta.generate({
     title: home.title,
     description: home.description,
-    baseURL: baseURL,
+    baseURL,
     path: home.path,
     image: home.image,
   });
@@ -29,13 +16,7 @@ export async function generateMetadata() {
 export default function Home() {
   return (
     <>
-      <Column
-        className={styles.home}
-        maxWidth="m"
-        gap="xl"
-        paddingY="12"
-        horizontal="center"
-      >
+      <Column className={styles.home} maxWidth="m" horizontal="center">
         <Schema
           as="webPage"
           baseURL={baseURL}
@@ -49,89 +30,46 @@ export default function Home() {
             image: `${baseURL}${person.avatar}`,
           }}
         />
-        <Column fillWidth horizontal="center" gap="m">
-          <Column maxWidth="s" horizontal="center" align="center">
-            <RevealFx fillWidth horizontal="center" paddingTop="16" paddingBottom="12">
-              <Button
-                id="get-photos"
-                className={styles.desktopPhotoCta}
-                data-border="rounded"
-                href="/event-photos"
-                variant="primary"
-                size="m"
-                weight="strong"
-                arrowIcon
-              >
-                Get your pictures
-              </Button>
-            </RevealFx>
-          {home.featured.display && (
-            <RevealFx
-              fillWidth
-              horizontal="center"
-              paddingBottom="32"
-              paddingLeft="12"
-            >
-              <Badge
-                background="brand-alpha-weak"
-                paddingX="12"
-                paddingY="4"
-                onBackground="neutral-strong"
-                textVariant="label-default-s"
-                arrow={false}
-                href={home.featured.href}
-              >
-                <Row paddingY="2">{home.featured.title}</Row>
-              </Badge>
-            </RevealFx>
-          )}
-          <RevealFx translateY="4" fillWidth horizontal="center" paddingBottom="16">
-            <Heading wrap="balance" variant="display-strong-l">
-              {home.headline}
-            </Heading>
-          </RevealFx>
-          <RevealFx translateY="8" delay={0.2} fillWidth horizontal="center" paddingBottom="32">
-            <Text wrap="balance" onBackground="neutral-weak" variant="heading-default-xl">
-              {home.subline}
-            </Text>
-          </RevealFx>
-          <RevealFx paddingTop="12" delay={0.4} horizontal="center" paddingLeft="12">
-            <Button
-              id="about"
-              data-border="rounded"
-              href={about.path}
-              variant="secondary"
-              size="m"
-              weight="default"
-              arrowIcon
-            >
-              <Row gap="8" vertical="center" paddingRight="4">
-                {about.avatar.display && (
-                  <Avatar
-                    marginRight="8"
-                    style={{ marginLeft: "-0.75rem" }}
-                    src={person.avatar}
-                    size="m"
-                  />
-                )}
-                {about.title}
-              </Row>
-            </Button>
-          </RevealFx>
-          </Column>
-        </Column>
-        <RevealFx translateY="16" delay={0.6}>
-          <Projects range={[1, 1]} />
-        </RevealFx>
-        <Projects range={[2]} />
-        <Mailchimp />
+
+        <section className={styles.hero}>
+          <p className={styles.eyebrow}>Flooy Studio event photos</p>
+          <h1 className={styles.title}>Your pictures are ready.</h1>
+          <p className={styles.intro}>Use your event code to view and download your photos.</p>
+          <Link href="/event-photos" className={styles.primaryCta}>
+            <span>
+              <small>Enter your access code</small>
+              <strong>Get your pictures</strong>
+            </span>
+            <span className={styles.primaryArrow} aria-hidden="true">→</span>
+          </Link>
+        </section>
+
+        <section className={styles.videoSection} aria-labelledby="showreel-heading">
+          <div className={styles.videoHeading}>
+            <p>Our work</p>
+            <h2 id="showreel-heading">Watch the showreel</h2>
+          </div>
+          <div className={styles.videoFrame}>
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/I5PrisDzEJQ?rel=0"
+              title="Flooy Studio showreel"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </section>
+
+        <nav className={styles.simpleLinks} aria-label="More from Flooy Studio">
+          <Link href="/work">View all work</Link>
+          <Link href="/about">About the studio</Link>
+        </nav>
       </Column>
 
       <div className={styles.mobileCtaBar}>
         <Link href="/event-photos" className={styles.mobilePhotoCta}>
-          <span className={styles.cameraIcon} aria-hidden="true">▣</span>
           <span>
-            <small>Photos from an event?</small>
+            <small>Have an event code?</small>
             <strong>Get your pictures</strong>
           </span>
           <span className={styles.arrow} aria-hidden="true">→</span>

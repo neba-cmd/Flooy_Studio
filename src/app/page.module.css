@@ -1,9 +1,155 @@
-.desktopPhotoCta {
-  min-height: 3rem;
-  padding-inline: 1.35rem !important;
+.home {
+  width: 100%;
+  padding: clamp(2.5rem, 7vw, 5.5rem) 1.25rem 4rem;
+}
+
+.hero {
+  display: flex;
+  width: 100%;
+  max-width: 46rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 0.8rem;
+  color: #f5b942;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 40rem;
+  margin: 0;
+  color: #fafafa;
+  font-size: clamp(2.35rem, 8vw, 5rem);
+  font-weight: 720;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.intro {
+  max-width: 30rem;
+  margin: 1.1rem 0 0;
+  color: #aaa;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.5;
+}
+
+.primaryCta {
+  display: flex;
+  width: min(100%, 31rem);
+  min-height: 6.2rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 22px;
+  background: #f5b942;
+  padding: 1rem 1.3rem 1rem 1.5rem;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.14),
-    0 10px 30px rgba(245, 185, 66, 0.22);
+    0 18px 55px rgba(0, 0, 0, 0.42),
+    0 0 38px rgba(245, 185, 66, 0.18);
+  color: #171006;
+  text-align: left;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.primaryCta:hover {
+  box-shadow:
+    0 22px 65px rgba(0, 0, 0, 0.48),
+    0 0 45px rgba(245, 185, 66, 0.25);
+  transform: translateY(-2px);
+}
+
+.primaryCta span:first-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.primaryCta small {
+  margin-bottom: 0.25rem;
+  font-size: 0.74rem;
+  font-weight: 650;
+  opacity: 0.68;
+}
+
+.primaryCta strong {
+  font-size: clamp(1.35rem, 4vw, 1.8rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+}
+
+.primaryArrow {
+  font-size: 2rem;
+}
+
+.videoSection {
+  width: 100%;
+  margin-top: clamp(3rem, 8vw, 5.5rem);
+}
+
+.videoHeading {
+  margin-bottom: 0.85rem;
+}
+
+.videoHeading p {
+  margin: 0 0 0.2rem;
+  color: #777;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.videoHeading h2 {
+  margin: 0;
+  color: #eee;
+  font-size: clamp(1.2rem, 3vw, 1.65rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.videoFrame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #272727;
+  border-radius: 18px;
+  background: #111;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  aspect-ratio: 16 / 9;
+}
+
+.videoFrame iframe {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  inset: 0;
+}
+
+.simpleLinks {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.simpleLinks a {
+  color: #999;
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.simpleLinks a:hover {
+  color: #f5b942;
 }
 
 .mobileCtaBar {
@@ -12,13 +158,35 @@
 
 @media (max-width: 640px) {
   .home {
-    padding-bottom: 7rem !important;
+    padding-top: 2.4rem;
+    padding-bottom: 7rem;
   }
 
-  .desktopPhotoCta {
-    width: min(100%, 20rem);
-    min-height: 3.25rem;
-    font-size: 1rem !important;
+  .hero {
+    align-items: stretch;
+    text-align: left;
+  }
+
+  .title {
+    max-width: 20rem;
+  }
+
+  .intro {
+    max-width: 21rem;
+  }
+
+  .primaryCta {
+    min-height: 5.5rem;
+    border-radius: 18px;
+    padding-inline: 1.1rem;
+  }
+
+  .videoSection {
+    margin-top: 3.25rem;
+  }
+
+  .videoFrame {
+    border-radius: 13px;
   }
 
   .mobileCtaBar {
@@ -34,30 +202,23 @@
   }
 
   .mobilePhotoCta {
-    display: grid;
-    grid-template-columns: 2.5rem 1fr auto;
-    align-items: center;
-    gap: 0.65rem;
+    display: flex;
     width: 100%;
     min-height: 4rem;
+    align-items: center;
+    justify-content: space-between;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 16px;
     background: #f5b942;
-    padding: 0.55rem 0.8rem;
-    box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.55),
-      0 0 24px rgba(245, 185, 66, 0.2);
+    padding: 0.55rem 1rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
     color: #161006;
     text-decoration: none;
     pointer-events: auto;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .mobilePhotoCta:active {
-    transform: scale(0.985);
-  }
-
-  .mobilePhotoCta span:nth-child(2) {
+  .mobilePhotoCta span:first-child {
     display: flex;
     flex-direction: column;
     line-height: 1.15;
@@ -66,36 +227,23 @@
   .mobilePhotoCta small {
     margin-bottom: 0.18rem;
     font-size: 0.68rem;
-    font-weight: 600;
-    opacity: 0.72;
+    font-weight: 650;
+    opacity: 0.7;
   }
 
   .mobilePhotoCta strong {
     font-size: 1rem;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-  }
-
-  .cameraIcon {
-    display: grid;
-    width: 2.5rem;
-    height: 2.5rem;
-    place-items: center;
-    border-radius: 12px;
-    background: rgba(10, 10, 10, 0.12);
-    font-size: 1.15rem;
+    font-weight: 850;
   }
 
   .arrow {
-    padding-right: 0.2rem;
-    font-size: 1.4rem;
-    font-weight: 500;
+    font-size: 1.45rem;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) and (max-width: 640px) {
   .mobileCtaBar {
-    animation: ctaEnter 500ms 250ms both ease-out;
+    animation: ctaEnter 450ms 200ms both ease-out;
   }
 
   @keyframes ctaEnter {
