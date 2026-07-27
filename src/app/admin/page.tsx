@@ -6,6 +6,7 @@ import { AdminAuthGate } from "@/components/AdminAuthGate";
 import { AdminNav } from "@/components/AdminNav";
 import { DropZone } from "@/components/DropZone";
 import { useUploadQueue } from "@/hooks/useUploadQueue";
+import { MAX_UPLOAD_ATTEMPTS } from "@/lib/photo-delivery/validation";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./page.module.css";
 
@@ -169,8 +170,11 @@ function UploadScreen({
         .single<ClientGalleryRow>();
       if (data) created = data;
       if (createError) {
-        createMessage = createError.message;
-        if (createError.code !== "23505") break;
+        createMessage =
+          createError.code === "23505"
+            ? "That name initial and the last four phone digits are already used. Use a different phone number or customer name."
+            : createError.message;
+        break;
       }
     }
 
@@ -308,9 +312,12 @@ function UploadScreen({
 
       <DropZone
         disabled={!canDrop}
+        onRejected={(messages) => setError(messages.join(" "))}
         onFiles={async (files) => {
-          await addPhotos(files, selectedEventId, selectedGalleryId);
-          setJustAdded(files.length);
+          setError(null);
+          const result = await addPhotos(files, selectedEventId, selectedGalleryId);
+          if (result.errors.length) setError(result.errors.join(" "));
+          setJustAdded(result.added);
           setTimeout(() => setJustAdded(0), 2000);
         }}
       />
@@ -347,6 +354,13 @@ function UploadScreen({
             online.
           </p>
         )}
+        {counts.failed > 0 && (
+          <p className={styles.queueFailure}>
+            {counts.failed} photo{counts.failed === 1 ? "" : "s"} could not be uploaded after
+            several attempts. Keep the page open and check the file type, connection, and Supabase
+            configuration.
+          </p>
+        )}
         {items.length > 0 ? (
           <div className={styles.queueGrid} aria-label="Photo upload queue">
             {items.map((item) => (
@@ -357,7 +371,7 @@ function UploadScreen({
                     className={`${styles.queueStatus} ${
                       item.status === "uploaded"
                         ? styles.queueStatusSent
-                        : item.status === "failed"
+                        : item.status === "failed" && item.attempts >= MAX_UPLOAD_ATTEMPTS
                           ? styles.queueStatusFailed
                           : item.status === "uploading"
                             ? styles.queueStatusUploading
@@ -367,7 +381,9 @@ function UploadScreen({
                     {item.status === "uploaded"
                       ? "Sent"
                       : item.status === "failed"
-                        ? "Retrying"
+                        ? item.attempts >= MAX_UPLOAD_ATTEMPTS
+                          ? "Failed"
+                          : "Retrying"
                         : item.status === "uploading"
                           ? "Uploading"
                           : "Waiting"}

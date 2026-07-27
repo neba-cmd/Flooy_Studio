@@ -7,11 +7,15 @@
     "build": "next build",
     "biome-write": "npx @biomejs/biome format --write .",
     "start": "next start",
-    "lint": "npx eslint . --ext .ts,.tsx,.js,.jsx"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "preflight": "node --env-file=.env.local scripts/production-preflight.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.0",
-    "@next/mdx": "^16.0.10",
+    "@next/mdx": "^16.2.12",
     "@once-ui-system/core": "^1.5.6",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.0",
@@ -20,7 +24,7 @@
     "dexie": "^4.4.4",
     "gray-matter": "^4.0.3",
     "lint-staged": "^16.1.5",
-    "next": "^16.0.10",
+    "next": "^16.2.11",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -35,8 +39,9 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.5",
     "eslint": "^9.25.0",
-    "eslint-config-next": "^16.2.9",
+    "eslint-config-next": "^16.2.12",
     "typescript": "^5.8.3",
-    "tzdata": "^1.0.44"
+    "tzdata": "^1.0.44",
+    "vitest": "^3.2.7"
   }
 }

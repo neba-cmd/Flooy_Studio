@@ -1,4 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
+import {
+  MAX_UPLOAD_ATTEMPTS,
+  resolvePhotoMimeType,
+  safePhotoExtension,
+} from "@/lib/photo-delivery/validation";
 import { db } from "./db";
 import { markUploading, markFailed, markUploaded } from "./queue";
 
@@ -31,7 +36,14 @@ async function uploadOne(clientId: string) {
       throw new Error("The original photo is no longer available on this device");
     }
 
-    const ext = item.fileName.split(".").pop() || "jpg";
+    const ext = safePhotoExtension({
+      name: item.fileName,
+      type: item.originalBlob.type,
+    });
+    const originalContentType = resolvePhotoMimeType({
+      name: item.fileName,
+      type: item.originalBlob.type,
+    });
     const previewPath = `${item.galleryId}/${item.clientId}-preview.jpg`;
     const originalPath = `${item.galleryId}/${item.clientId}-original.${ext}`;
 
@@ -41,6 +53,7 @@ async function uploadOne(clientId: string) {
         upsert: true,
       }),
       supabase.storage.from("photo-originals").upload(originalPath, item.originalBlob, {
+        contentType: originalContentType,
         upsert: true,
       }),
     ]);
@@ -87,7 +100,7 @@ export async function runSyncCycle() {
       // A tab can close while an item is marked uploading. Recover it instead
       // of leaving the photo permanently stuck in IndexedDB.
       if (item.status === "uploading") return now - item.updatedAt >= STALE_UPLOAD_MS;
-      if (item.status === "failed") {
+      if (item.status === "failed" && item.attempts < MAX_UPLOAD_ATTEMPTS) {
         const backoff = RETRY_BACKOFF_MS[Math.min(item.attempts, RETRY_BACKOFF_MS.length - 1)];
         return now - item.updatedAt >= backoff;
       }

@@ -6,6 +6,5 @@ import { getSupabaseConfig } from "./config";
 // control what it can actually read/write.
 export function createClient() {
   const { url, key } = getSupabaseConfig();
-
   return createBrowserClient(url, key);
 }

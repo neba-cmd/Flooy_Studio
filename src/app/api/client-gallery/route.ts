@@ -1,25 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { getSupabaseConfig } from "@/lib/supabase/config";
+import { normalizeAccessCode, ACCESS_CODE_PATTERN } from "@/lib/photo-delivery/validation";
+import { publicApiLimiter, requestClientKey } from "@/lib/server/rate-limit";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
+  const rate = publicApiLimiter.check(`gallery:${requestClientKey(req)}`, {
+    limit: 12,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Too many code attempts. Please wait a few minutes and try again." },
+      { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } }
+    );
+  }
+
   const { code } = await req.json().catch(() => ({}));
-  const normalizedCode = typeof code === "string" ? code.trim().toUpperCase() : "";
-  if (!/^[A-Z0-9]{6}$/.test(normalizedCode)) {
+  const normalizedCode = normalizeAccessCode(code);
+  if (!ACCESS_CODE_PATTERN.test(normalizedCode)) {
     return NextResponse.json({ error: "Enter a valid gallery code." }, { status: 400 });
   }
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!serviceKey) {
-    console.error("[client-gallery] SUPABASE_SERVICE_ROLE_KEY is not configured");
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch (error) {
+    console.error("[client-gallery] Server configuration error", error);
     return NextResponse.json(
       { error: "The gallery service is temporarily unavailable." },
       { status: 503 }
     );
   }
 
-  const { url } = getSupabaseConfig();
-  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
   const { data: gallery, error: galleryError } = await admin
     .from("customer_galleries")
     .select("id, customer_name, access_code, is_paid")

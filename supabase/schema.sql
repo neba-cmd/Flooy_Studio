@@ -35,7 +35,7 @@ create table public.customer_galleries (
     and customer_email ~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'
   ),
   customer_phone text not null check (length(trim(customer_phone)) between 7 and 30),
-  access_code text not null unique check (access_code ~ '^[A-Z0-9]{6}$'),
+  access_code text not null unique check (access_code ~ '^[A-Z][0-9]{4}$'),
   is_paid boolean not null default false,
   paid_at timestamptz,
   created_at timestamptz not null default now(),
@@ -58,30 +58,23 @@ create table public.gallery_photos (
   created_at timestamptz not null default now()
 );
 
--- Generate a short code using three characters from the customer's name and
--- three digits, for example DAN482.
-create or replace function public.generate_gallery_access_code(p_customer_name text)
+-- Generate a short code using the customer's first initial and the last four
+-- phone digits, for example N4821.
+create or replace function public.generate_gallery_access_code(
+  p_customer_name text,
+  p_customer_phone text
+)
 returns text
-language plpgsql
+language sql
 security definer
 set search_path = public
 as $$
-declare
-  clean_name text;
-  name_prefix text;
-  candidate text;
-begin
-  clean_name := regexp_replace(upper(coalesce(p_customer_name, '')), '[^A-Z0-9]', '', 'g');
-  name_prefix := rpad(substr(coalesce(nullif(clean_name, ''), 'PIC'), 1, 3), 3, 'X');
-
-  loop
-    candidate := name_prefix || lpad(floor(random() * 1000)::integer::text, 3, '0');
-    exit when not exists (
-      select 1 from public.customer_galleries where access_code = candidate
-    );
-  end loop;
-  return candidate;
-end;
+  select
+    coalesce(
+      nullif(substr(regexp_replace(upper(coalesce(p_customer_name, '')), '[^A-Z]', '', 'g'), 1, 1), ''),
+      'X'
+    )
+    || right(regexp_replace(coalesce(p_customer_phone, ''), '[^0-9]', '', 'g'), 4);
 $$;
 
 create or replace function public.set_gallery_access_code()
@@ -91,15 +84,21 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.access_code is null or trim(new.access_code) = '' then
-    new.access_code := public.generate_gallery_access_code(new.customer_name);
+  if length(regexp_replace(coalesce(new.customer_phone, ''), '[^0-9]', '', 'g')) < 4 then
+    raise exception 'Customer phone number must contain at least four digits';
   end if;
+
+  new.access_code := public.generate_gallery_access_code(
+    new.customer_name,
+    new.customer_phone
+  );
   return new;
 end;
 $$;
 
 create trigger set_customer_gallery_access_code
-before insert on public.customer_galleries
+before insert or update of customer_name, customer_phone
+on public.customer_galleries
 for each row execute function public.set_gallery_access_code();
 
 -- Automatically create the photographer profile after an Auth user is added.
@@ -144,8 +143,10 @@ begin
 end;
 $$;
 
-revoke all on function public.generate_gallery_access_code(text) from public;
-grant execute on function public.generate_gallery_access_code(text) to authenticated;
+revoke all on function public.generate_gallery_access_code(text, text) from public, anon, authenticated;
+revoke all on function public.set_gallery_access_code() from public, anon, authenticated;
+revoke all on function public.create_photographer_profile() from public, anon, authenticated;
+revoke all on function public.ensure_photographer_profile() from public, anon;
 grant execute on function public.ensure_photographer_profile() to authenticated;
 
 -- Backup-friendly indexes
@@ -165,24 +166,24 @@ alter table public.gallery_photos enable row level security;
 
 create policy "Photographer owns profile"
 on public.photographer_profiles for all to authenticated
-using (id = auth.uid()) with check (id = auth.uid());
+using (id = (select auth.uid())) with check (id = (select auth.uid()));
 
 create policy "Photographer owns events"
 on public.photo_events for all to authenticated
-using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 
 create policy "Photographer owns customer galleries"
 on public.customer_galleries for all to authenticated
 using (
   exists (
     select 1 from public.photo_events e
-    where e.id = event_id and e.owner_id = auth.uid()
+    where e.id = event_id and e.owner_id = (select auth.uid())
   )
 )
 with check (
   exists (
     select 1 from public.photo_events e
-    where e.id = event_id and e.owner_id = auth.uid()
+    where e.id = event_id and e.owner_id = (select auth.uid())
   )
 );
 
@@ -193,7 +194,7 @@ using (
     select 1
     from public.customer_galleries g
     join public.photo_events e on e.id = g.event_id
-    where g.id = gallery_id and e.owner_id = auth.uid()
+    where g.id = gallery_id and e.owner_id = (select auth.uid())
   )
 )
 with check (
@@ -201,7 +202,7 @@ with check (
     select 1
     from public.customer_galleries g
     join public.photo_events e on e.id = g.event_id
-    where g.id = gallery_id and e.owner_id = auth.uid()
+    where g.id = gallery_id and e.owner_id = (select auth.uid())
   )
 );
 
@@ -233,7 +234,7 @@ using (
     from public.customer_galleries g
     join public.photo_events e on e.id = g.event_id
     where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = auth.uid()
+      and e.owner_id = (select auth.uid())
   )
 );
 
@@ -246,7 +247,7 @@ with check (
     from public.customer_galleries g
     join public.photo_events e on e.id = g.event_id
     where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = auth.uid()
+      and e.owner_id = (select auth.uid())
   )
 );
 
@@ -259,7 +260,7 @@ using (
     from public.customer_galleries g
     join public.photo_events e on e.id = g.event_id
     where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = auth.uid()
+      and e.owner_id = (select auth.uid())
   )
 )
 with check (
@@ -269,7 +270,7 @@ with check (
     from public.customer_galleries g
     join public.photo_events e on e.id = g.event_id
     where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = auth.uid()
+      and e.owner_id = (select auth.uid())
   )
 );
 
@@ -282,10 +283,10 @@ using (
     from public.customer_galleries g
     join public.photo_events e on e.id = g.event_id
     where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = auth.uid()
+      and e.owner_id = (select auth.uid())
   )
 );
 
 -- No anonymous table or Storage policies are created. Customer access goes
--- only through the server routes, which validate the six-character code and sign
+-- only through the server routes, which validate the five-character code and sign
 -- individual private files for a short time.

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { getSupabaseConfig } from "@/lib/supabase/config";
+import {
+  ACCESS_CODE_PATTERN,
+  isValidPhotoId,
+  normalizeAccessCode,
+} from "@/lib/photo-delivery/validation";
+import { publicApiLimiter, requestClientKey } from "@/lib/server/rate-limit";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * This is the real security boundary for original-photo downloads.
@@ -10,28 +15,38 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
  * Supabase schema versions.
  */
 export async function POST(req: NextRequest) {
+  const rate = publicApiLimiter.check(`download:${requestClientKey(req)}`, {
+    limit: 120,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Too many downloads were requested. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } }
+    );
+  }
+
   const { code, photoId } = await req.json().catch(() => ({}));
-  const normalizedCode = typeof code === "string" ? code.trim().toUpperCase() : "";
+  const normalizedCode = normalizeAccessCode(code);
 
   if (
-    typeof photoId !== "string" ||
-    !/^[A-Z0-9]{6}$/.test(normalizedCode) ||
-    !/^[0-9a-f-]{36}$/i.test(photoId)
+    !ACCESS_CODE_PATTERN.test(normalizedCode) ||
+    !isValidPhotoId(photoId)
   ) {
     return NextResponse.json({ error: "Missing code or photoId" }, { status: 400 });
   }
 
-  const { url } = getSupabaseConfig();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!serviceRoleKey) {
-    console.error("[download-original] SUPABASE_SERVICE_ROLE_KEY is not configured");
+  let adminClient;
+  try {
+    adminClient = createAdminClient();
+  } catch (error) {
+    console.error("[download-original] Server configuration error", error);
     return NextResponse.json(
       { error: "Downloads are temporarily unavailable. Please contact the photographer." },
       { status: 503 }
     );
   }
 
-  const adminClient = createClient(url, serviceRoleKey, { auth: { persistSession: false } });
   const { data: gallery, error: galleryError } = await adminClient
     .from("customer_galleries")
     .select("id, is_paid")

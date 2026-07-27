@@ -69,5 +69,8 @@ alter table public.customer_galleries
   add constraint customer_galleries_access_code_check
   check (access_code ~ '^[A-Z0-9]{6}$');
 
-revoke all on function public.generate_gallery_access_code(text) from public;
-grant execute on function public.generate_gallery_access_code(text) to authenticated;
+revoke all on function public.generate_gallery_access_code(text)
+from public, anon, authenticated;
+
+revoke all on function public.set_gallery_access_code()
+from public, anon, authenticated;

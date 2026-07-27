@@ -1,5 +1,6 @@
 import { db, type QueuedPhoto } from "./db";
 import { createWatermarkedPreview } from "./image-processing";
+import { MAX_UPLOAD_ATTEMPTS, validatePhotoFile } from "@/lib/photo-delivery/validation";
 
 /**
  * Called the instant a photographer drags/drops a photo into a
@@ -14,6 +15,9 @@ export async function enqueuePhoto(
   galleryId: string,
   photographerId: string
 ) {
+  const validationError = validatePhotoFile(file);
+  if (validationError) throw new Error(validationError);
+
   const clientId = crypto.randomUUID();
   const previewBlob = await createWatermarkedPreview(file);
 
@@ -42,9 +46,14 @@ export async function getQueueSnapshot() {
 export async function countByStatus() {
   const all = await db.queue.toArray();
   return {
-    queued: all.filter((i) => i.status === "queued" || i.status === "failed").length,
+    queued: all.filter(
+      (i) => i.status === "queued" || (i.status === "failed" && i.attempts < MAX_UPLOAD_ATTEMPTS)
+    ).length,
     uploading: all.filter((i) => i.status === "uploading").length,
     uploaded: all.filter((i) => i.status === "uploaded").length,
+    failed: all.filter(
+      (i) => i.status === "failed" && i.attempts >= MAX_UPLOAD_ATTEMPTS
+    ).length,
     total: all.length,
   };
 }

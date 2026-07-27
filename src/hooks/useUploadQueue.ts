@@ -10,6 +10,7 @@ export interface QueueCounts {
   queued: number;
   uploading: number;
   uploaded: number;
+  failed: number;
   total: number;
 }
 
@@ -18,6 +19,7 @@ export function useUploadQueue(photographerId: string) {
     queued: 0,
     uploading: 0,
     uploaded: 0,
+    failed: 0,
     total: 0,
   });
   const [items, setItems] = useState<QueuedPhoto[]>([]);
@@ -62,11 +64,21 @@ export function useUploadQueue(photographerId: string) {
 
   const addPhotos = useCallback(
     async (files: File[], eventId: string, galleryId: string) => {
+      const errors: string[] = [];
+      let added = 0;
       for (const file of files) {
-        await enqueuePhoto(file, eventId, galleryId, photographerId);
+        try {
+          await enqueuePhoto(file, eventId, galleryId, photographerId);
+          added += 1;
+        } catch (error) {
+          errors.push(
+            error instanceof Error ? error.message : `${file.name} could not be prepared.`
+          );
+        }
       }
       await refresh();
-      runSyncCycle();
+      if (added) void runSyncCycle();
+      return { added, errors };
     },
     [photographerId, refresh]
   );

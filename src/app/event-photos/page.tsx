@@ -164,7 +164,7 @@ export default function EventPhotosPage() {
           inputMode="text"
           autoCapitalize="characters"
           autoComplete="one-time-code"
-          maxLength={6}
+          maxLength={5}
           pattern="[A-Z0-9]{6}"
           className={styles.input}
         />
