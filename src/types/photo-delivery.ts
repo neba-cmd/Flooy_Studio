@@ -1,6 +1,7 @@
 export interface PhotographerProfile {
   id: string;
   display_name: string;
+  email: string;
   created_at: string;
 }
 
@@ -29,6 +30,7 @@ export interface GalleryPhoto {
   id: string;
   upload_key: string;
   gallery_id: string;
+  photographer_id: string;
   original_file_name: string;
   preview_storage_path: string;
   original_storage_path: string;

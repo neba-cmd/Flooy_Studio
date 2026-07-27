@@ -12,6 +12,7 @@ create extension if not exists pgcrypto;
 create table public.photographer_profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text not null default 'Photographer',
+  email text not null,
   created_at timestamptz not null default now()
 );
 
@@ -50,6 +51,7 @@ create table public.gallery_photos (
   id uuid primary key default gen_random_uuid(),
   upload_key uuid not null unique,
   gallery_id uuid not null references public.customer_galleries (id) on delete cascade,
+  photographer_id uuid not null references public.photographer_profiles (id),
   original_file_name text not null,
   preview_storage_path text not null unique,
   original_storage_path text not null unique,
@@ -109,8 +111,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.photographer_profiles (id, display_name)
-  values (new.id, coalesce(new.raw_user_meta_data ->> 'display_name', new.email, 'Photographer'))
+  insert into public.photographer_profiles (id, display_name, email)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data ->> 'display_name', new.email, 'Photographer'),
+    lower(coalesce(new.email, 'unknown@example.invalid'))
+  )
   on conflict (id) do nothing;
   return new;
 end;
@@ -132,9 +138,14 @@ declare
 begin
   if current_user_id is null then raise exception 'Not authenticated'; end if;
 
-  insert into public.photographer_profiles (id, display_name)
-  values (current_user_id, coalesce(auth.jwt() ->> 'email', 'Photographer'))
-  on conflict (id) do nothing;
+  insert into public.photographer_profiles (id, display_name, email)
+  values (
+    current_user_id,
+    coalesce(auth.jwt() ->> 'email', 'Photographer'),
+    lower(coalesce(auth.jwt() ->> 'email', 'unknown@example.invalid'))
+  )
+  on conflict (id) do update
+  set email = excluded.email;
 
   return query
   select p.display_name, true
@@ -156,55 +167,32 @@ create index customer_galleries_code_idx on public.customer_galleries (access_co
 create index customer_galleries_phone_idx on public.customer_galleries (customer_phone);
 create index customer_galleries_email_idx on public.customer_galleries (customer_email);
 create index gallery_photos_gallery_idx on public.gallery_photos (gallery_id);
+create index gallery_photos_photographer_idx on public.gallery_photos (photographer_id);
 create index gallery_photos_created_idx on public.gallery_photos (created_at);
 
--- Database security: photographers can access only their own event tree.
+-- Database security: every authenticated company photographer can work with
+-- the shared event tree. Each photo still records the photographer who took it.
 alter table public.photographer_profiles enable row level security;
 alter table public.photo_events enable row level security;
 alter table public.customer_galleries enable row level security;
 alter table public.gallery_photos enable row level security;
 
-create policy "Photographer owns profile"
-on public.photographer_profiles for all to authenticated
-using (id = (select auth.uid())) with check (id = (select auth.uid()));
+create policy "Company photographers view team"
+on public.photographer_profiles for select to authenticated
+using (true);
 
-create policy "Photographer owns events"
+create policy "Company photographers manage events"
 on public.photo_events for all to authenticated
-using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
+using (true) with check (true);
 
-create policy "Photographer owns customer galleries"
+create policy "Company photographers manage customer galleries"
 on public.customer_galleries for all to authenticated
-using (
-  exists (
-    select 1 from public.photo_events e
-    where e.id = event_id and e.owner_id = (select auth.uid())
-  )
-)
-with check (
-  exists (
-    select 1 from public.photo_events e
-    where e.id = event_id and e.owner_id = (select auth.uid())
-  )
-);
+using (true) with check (true);
 
-create policy "Photographer owns gallery photos"
+create policy "Company photographers manage gallery photos"
 on public.gallery_photos for all to authenticated
-using (
-  exists (
-    select 1
-    from public.customer_galleries g
-    join public.photo_events e on e.id = g.event_id
-    where g.id = gallery_id and e.owner_id = (select auth.uid())
-  )
-)
-with check (
-  exists (
-    select 1
-    from public.customer_galleries g
-    join public.photo_events e on e.id = g.event_id
-    where g.id = gallery_id and e.owner_id = (select auth.uid())
-  )
-);
+using (true)
+with check (photographer_id = (select auth.uid()));
 
 -- Private, image-only storage with a 50 MB limit.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -225,66 +213,31 @@ values
   );
 
 -- Storage path format: <customer_gallery_id>/<unique_file_name>
-create policy "Photographer reads own photo files"
+create policy "Company photographers read photo files"
 on storage.objects for select to authenticated
 using (
   bucket_id in ('photo-previews', 'photo-originals')
-  and exists (
-    select 1
-    from public.customer_galleries g
-    join public.photo_events e on e.id = g.event_id
-    where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = (select auth.uid())
-  )
 );
 
-create policy "Photographer uploads own photo files"
+create policy "Company photographers upload photo files"
 on storage.objects for insert to authenticated
 with check (
   bucket_id in ('photo-previews', 'photo-originals')
-  and exists (
-    select 1
-    from public.customer_galleries g
-    join public.photo_events e on e.id = g.event_id
-    where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = (select auth.uid())
-  )
 );
 
-create policy "Photographer updates own photo files"
+create policy "Company photographers update photo files"
 on storage.objects for update to authenticated
 using (
   bucket_id in ('photo-previews', 'photo-originals')
-  and exists (
-    select 1
-    from public.customer_galleries g
-    join public.photo_events e on e.id = g.event_id
-    where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = (select auth.uid())
-  )
 )
 with check (
   bucket_id in ('photo-previews', 'photo-originals')
-  and exists (
-    select 1
-    from public.customer_galleries g
-    join public.photo_events e on e.id = g.event_id
-    where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = (select auth.uid())
-  )
 );
 
-create policy "Photographer deletes own photo files"
+create policy "Company photographers delete photo files"
 on storage.objects for delete to authenticated
 using (
   bucket_id in ('photo-previews', 'photo-originals')
-  and exists (
-    select 1
-    from public.customer_galleries g
-    join public.photo_events e on e.id = g.event_id
-    where g.id = ((storage.foldername(name))[1])::uuid
-      and e.owner_id = (select auth.uid())
-  )
 );
 
 -- No anonymous table or Storage policies are created. Customer access goes

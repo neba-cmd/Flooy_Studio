@@ -64,6 +64,7 @@ async function uploadOne(clientId: string) {
       {
         upload_key: item.clientId,
         gallery_id: item.galleryId,
+        photographer_id: item.photographerId,
         original_file_name: item.fileName,
         preview_storage_path: previewPath,
         original_storage_path: originalPath,
