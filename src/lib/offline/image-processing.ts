@@ -51,25 +51,43 @@ export async function createWatermarkedPreview(
 
   ctx.drawImage(source, 0, 0, width, height);
 
-  // Diagonal repeated watermark
+  // Dense, high-contrast diagonal watermark. The outline and repeated spacing
+  // keep it visible across both bright and dark areas of a photograph.
   ctx.save();
-  ctx.globalAlpha = 0.28;
+  ctx.globalAlpha = 0.62;
   ctx.fillStyle = "#ffffff";
-  ctx.strokeStyle = "rgba(0,0,0,0.35)";
-  ctx.lineWidth = 2;
-  const fontSize = Math.max(18, Math.round(width / 18));
-  ctx.font = `bold ${fontSize}px sans-serif`;
+  ctx.strokeStyle = "rgba(0,0,0,0.9)";
+  ctx.lineWidth = Math.max(3, Math.round(width / 450));
+  ctx.lineJoin = "round";
+  const fontSize = Math.max(24, Math.round(width / 13));
+  ctx.font = `900 ${fontSize}px Arial, sans-serif`;
   ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   ctx.translate(width / 2, height / 2);
   ctx.rotate(-Math.PI / 6);
 
-  const stepY = fontSize * 4;
-  for (let y = -height; y < height; y += stepY) {
-    for (let x = -width; x < width; x += fontSize * watermarkText.length * 0.9) {
+  const stepY = fontSize * 2.3;
+  const stepX = Math.max(fontSize * 4.5, fontSize * watermarkText.length * 0.72);
+  for (let y = -height * 1.5; y < height * 1.5; y += stepY) {
+    for (let x = -width * 1.5; x < width * 1.5; x += stepX) {
       ctx.strokeText(watermarkText, x, y);
       ctx.fillText(watermarkText, x, y);
     }
   }
+  ctx.restore();
+
+  // A large central mark stays obvious even when a customer crops the edges.
+  ctx.save();
+  ctx.globalAlpha = 0.78;
+  ctx.fillStyle = "#ffffff";
+  ctx.strokeStyle = "rgba(0,0,0,0.95)";
+  ctx.lineWidth = Math.max(5, Math.round(width / 280));
+  ctx.lineJoin = "round";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `900 ${Math.max(38, Math.round(width / 7))}px Arial, sans-serif`;
+  ctx.strokeText(watermarkText, width / 2, height / 2);
+  ctx.fillText(watermarkText, width / 2, height / 2);
   ctx.restore();
 
   cleanup();
