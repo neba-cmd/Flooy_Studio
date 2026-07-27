@@ -402,6 +402,29 @@
   cursor: not-allowed;
 }
 
+.galleryActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deleteButton {
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  border-radius: 8px;
+  background: rgba(248, 113, 113, 0.08);
+  padding: 0.55rem 0.85rem;
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.deleteButton:disabled,
+.deleteIconButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .photoGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -465,6 +488,18 @@
   cursor: pointer;
 }
 
+.deleteIconButton {
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: 0 0 auto;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 7px;
+  background: rgba(248, 113, 113, 0.06);
+  color: #fca5a5;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
 @media (max-width: 760px) {
   .main {
     padding: 1.5rem 1rem;
@@ -480,6 +515,12 @@
 
   .photoGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .expandedHeader,
+  .galleryActions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

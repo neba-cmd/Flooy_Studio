@@ -87,6 +87,7 @@ function DashboardScreen({
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const [loadingGallery, setLoadingGallery] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const selectedEvent = useMemo(
     () => events.find((event) => event.id === selectedEventId),
@@ -303,6 +304,112 @@ function DashboardScreen({
         : `Starting ${selected.length} downloads from ${row.name}. Your browser may ask for permission to download multiple files.`
     );
     setDownloading(null);
+  }
+
+  async function deleteStorageFiles(photos: PhotoRow[]) {
+    if (!photos.length) return;
+    const supabase = createClient();
+    const [previewResult, originalResult] = await Promise.all([
+      supabase.storage
+        .from("photo-previews")
+        .remove(photos.map((photo) => photo.preview_path)),
+      supabase.storage
+        .from("photo-originals")
+        .remove(photos.map((photo) => photo.original_path)),
+    ]);
+
+    if (previewResult.error || originalResult.error) {
+      throw new Error(previewResult.error?.message ?? originalResult.error?.message);
+    }
+  }
+
+  async function deletePhoto(row: GalleryRow, photo: PhotoRow) {
+    if (
+      !window.confirm(
+        `Permanently delete "${photo.file_name}"? This removes the preview and original photo.`
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(photo.id);
+    setStatus(null);
+    try {
+      await deleteStorageFiles([photo]);
+      const supabase = createClient();
+      const { error } = await supabase.from("gallery_photos").delete().eq("id", photo.id);
+      if (error) throw error;
+
+      setGalleryPhotos((current) => ({
+        ...current,
+        [row.id]: (current[row.id] ?? []).filter((item) => item.id !== photo.id),
+      }));
+      setPreviewUrls((current) => {
+        const next = { ...current };
+        delete next[photo.id];
+        return next;
+      });
+      setStatus(`Deleted ${photo.file_name}.`);
+      await loadGalleries();
+    } catch (error) {
+      setStatus(
+        `Could not completely delete the photo: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    } finally {
+      setDeleting(null);
+    }
+  }
+
+  async function deleteGallery(row: GalleryRow, loadedPhotos: PhotoRow[]) {
+    if (
+      !window.confirm(
+        `Permanently delete the "${row.name}" folder and all ${row.photo_count} photos inside it?`
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(row.id);
+    setStatus(null);
+    try {
+      let photos = loadedPhotos;
+      if (photos.length !== row.photo_count) {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("gallery_photos")
+          .select(
+            "id, photographer_id, file_name:original_file_name, preview_path:preview_storage_path, original_path:original_storage_path"
+          )
+          .eq("gallery_id", row.id);
+        if (error) throw error;
+        photos = (data ?? []) as PhotoRow[];
+      }
+
+      await deleteStorageFiles(photos);
+      const supabase = createClient();
+      const { error } = await supabase.from("customer_galleries").delete().eq("id", row.id);
+      if (error) throw error;
+
+      setRows((current) => current.filter((gallery) => gallery.id !== row.id));
+      setGalleryPhotos((current) => {
+        const next = { ...current };
+        delete next[row.id];
+        return next;
+      });
+      setOpenGalleryId(null);
+      setStatus(`Deleted the ${row.name} folder and its ${photos.length} photos.`);
+      await loadGalleries();
+    } catch (error) {
+      setStatus(
+        `Could not completely delete the folder: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    } finally {
+      setDeleting(null);
+    }
   }
 
   useEffect(() => {
@@ -565,14 +672,24 @@ function DashboardScreen({
                                 {row.customer_phone} · {row.customer_email}
                               </p>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => void downloadPhotos(row, photos)}
-                              disabled={!photos.length || downloading === row.id}
-                              className={styles.downloadAllButton}
-                            >
-                              {downloading === row.id ? "Preparing…" : "Download all"}
-                            </button>
+                            <div className={styles.galleryActions}>
+                              <button
+                                type="button"
+                                onClick={() => void downloadPhotos(row, photos)}
+                                disabled={!photos.length || downloading === row.id}
+                                className={styles.downloadAllButton}
+                              >
+                                {downloading === row.id ? "Preparing…" : "Download all"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void deleteGallery(row, photos)}
+                                disabled={deleting !== null}
+                                className={styles.deleteButton}
+                              >
+                                {deleting === row.id ? "Deleting…" : "Delete folder"}
+                              </button>
+                            </div>
                           </div>
                           {loadingGallery === row.id ? (
                             <p className={styles.empty}>Loading gallery…</p>
@@ -609,11 +726,20 @@ function DashboardScreen({
                                     <button
                                       type="button"
                                       onClick={() => void downloadPhotos(row, photos, photo)}
-                                      disabled={downloading === photo.id}
+                                      disabled={downloading === photo.id || deleting === photo.id}
                                       className={styles.iconButton}
                                       aria-label={`Download ${photo.file_name}`}
                                     >
                                       {downloading === photo.id ? "…" : "↓"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => void deletePhoto(row, photo)}
+                                      disabled={deleting !== null}
+                                      className={styles.deleteIconButton}
+                                      aria-label={`Delete ${photo.file_name}`}
+                                    >
+                                      {deleting === photo.id ? "…" : "×"}
                                     </button>
                                   </div>
                                 </article>
