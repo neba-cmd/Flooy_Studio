@@ -1,4 +1,5 @@
 import { Column, Meta, Schema } from "@once-ui-system/core";
+import Image from "next/image";
 import Link from "next/link";
 import { about, baseURL, home, person } from "@/resources";
 import styles from "./page.module.css";
@@ -35,13 +36,46 @@ export default function Home() {
           <p className={styles.eyebrow}>Flooy Studio event photos</p>
           <h1 className={styles.title}>Your pictures are ready.</h1>
           <p className={styles.intro}>Use your event code to view and download your photos.</p>
-          <Link href="/event-photos" className={styles.primaryCta}>
+          <Link href="https://gallery.flooystudio.com" className={styles.primaryCta}>
             <span>
               <small>Enter your access code</small>
               <strong>Get your pictures</strong>
             </span>
             <span className={styles.primaryArrow} aria-hidden="true">→</span>
           </Link>
+        </section>
+
+        <section className={styles.eventPhotos} aria-labelledby="event-photos-heading">
+          <div className={styles.eventPhotosBackdrop} aria-hidden="true">
+            <div className={styles.eventPhotoMain}>
+              <Image
+                src="/images/gallery/DSC05937.JPG"
+                alt=""
+                fill
+                sizes="(max-width: 640px) 100vw, 760px"
+              />
+            </div>
+            <div className={styles.eventPhotoInset}>
+              <Image
+                src="/images/gallery/DSC01660.jpg"
+                alt=""
+                fill
+                sizes="(max-width: 640px) 40vw, 260px"
+              />
+            </div>
+          </div>
+
+          <div className={styles.eventPhotosContent}>
+            <p className={styles.eventPhotosLabel}>Event photos</p>
+            <h2 id="event-photos-heading">Get Your Pictures</h2>
+            <p className={styles.eventPhotosText}>
+              Find and download your photos from the latest Flooy Studio events.
+            </p>
+            <Link href="https://gallery.flooystudio.com" className={styles.eventPhotosButton}>
+              <span>View Your Photos</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </section>
 
         <section className={styles.videoSection} aria-labelledby="showreel-heading">
@@ -67,7 +101,7 @@ export default function Home() {
       </Column>
 
       <div className={styles.mobileCtaBar}>
-        <Link href="/event-photos" className={styles.mobilePhotoCta}>
+        <Link href="https://gallery.flooystudio.com" className={styles.mobilePhotoCta}>
           <span>
             <small>Have an event code?</small>
             <strong>Get your pictures</strong>
