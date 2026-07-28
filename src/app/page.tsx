@@ -49,7 +49,7 @@ export default function Home() {
           <div className={styles.eventPhotosBackdrop} aria-hidden="true">
             <div className={styles.eventPhotoMain}>
               <Image
-                src="/images/gallery/DSC05937.JPG"
+                src="/images/homepage-event-main.jpg"
                 alt=""
                 fill
                 sizes="(max-width: 640px) 100vw, 760px"
@@ -57,7 +57,7 @@ export default function Home() {
             </div>
             <div className={styles.eventPhotoInset}>
               <Image
-                src="/images/gallery/DSC01660.jpg"
+                src="/images/homepage-event-inset.jpg"
                 alt=""
                 fill
                 sizes="(max-width: 640px) 40vw, 260px"
