@@ -49,7 +49,7 @@ export default function Home() {
           <div className={styles.eventPhotosBackdrop} aria-hidden="true">
             <div className={styles.eventPhotoMain}>
               <Image
-                src="/images/homepage-event-main.jpg"
+                src="/images/gallery/itally football/DSC00660.jpg"
                 alt=""
                 fill
                 sizes="(max-width: 640px) 100vw, 760px"
