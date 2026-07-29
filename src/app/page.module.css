@@ -1,10 +1,21 @@
 .page {
-  --gold: #f5b942;
-  --ink: #100d08;
+  --page-navy: #07111f;
+  --surface-navy: #0d2742;
+  --gold: #f4b942;
+  --gold-hover: #dfa52e;
+  --white: #fff;
+  --secondary: #e5e7eb;
+  --muted: #cbd5e1;
+  --dark-on-gold: #111827;
+  --border: rgba(255, 255, 255, 0.18);
   width: 100%;
   max-width: 76rem;
   overflow: clip;
   padding-bottom: clamp(2rem, 6vw, 4.5rem);
+  color: var(--white);
+  background: var(--page-navy);
+  box-shadow: 0 0 0 100vmax var(--page-navy);
+  clip-path: inset(0 -100vmax);
 }
 
 .hero {
@@ -15,10 +26,10 @@
   min-height: min(49rem, calc(100svh - 6rem));
   overflow: hidden;
   align-items: flex-end;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--border);
   border-radius: 30px;
-  background: #10130e;
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
+  background: var(--surface-navy);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
 }
 
 .carousel,
@@ -40,8 +51,8 @@
 .heroOverlay {
   z-index: -1;
   background:
-    linear-gradient(90deg, rgba(7, 8, 6, 0.89) 0%, rgba(7, 8, 6, 0.62) 52%, rgba(7, 8, 6, 0.25) 100%),
-    linear-gradient(0deg, rgba(7, 8, 6, 0.92) 0%, transparent 66%);
+    linear-gradient(to bottom, rgba(3, 10, 20, 0.35), rgba(3, 10, 20, 0.88)),
+    rgba(3, 10, 20, 0.68);
 }
 
 .heroContent {
@@ -52,176 +63,286 @@
 .brand {
   margin: 0 0 1.2rem;
   color: var(--gold);
-  font-size: 0.76rem;
-  font-weight: 850;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .hero h1 {
   display: flex;
-  max-width: 46rem;
+  max-width: 48rem;
   flex-direction: column;
   margin: 0;
-  color: #fff;
-  font-size: clamp(2.25rem, 6vw, 4.8rem);
-  font-weight: 850;
-  letter-spacing: -0.045em;
-  line-height: 1.08;
+  color: var(--white);
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.02;
   text-wrap: balance;
 }
 
 .hero h1 small {
-  margin-top: 0.25rem;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 0.43em;
-  font-weight: 650;
-  letter-spacing: -0.025em;
+  margin-top: 0.55rem;
+  color: var(--secondary);
+  font-size: clamp(1.35rem, 2.8vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
 }
 
 .supportingText {
   display: flex;
-  max-width: 38rem;
+  max-width: 40rem;
   flex-direction: column;
-  gap: 0.22rem;
-  margin: 1.15rem 0 0;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: clamp(0.92rem, 2vw, 1.08rem);
+  gap: 0.32rem;
+  margin: 1.25rem 0 0;
+  color: var(--secondary);
+  font-size: clamp(1.05rem, 2vw, 1.22rem);
   line-height: 1.55;
 }
 
 .supportingText span:last-child {
-  color: rgba(255, 255, 255, 0.63);
-  font-size: 0.82em;
+  color: var(--muted);
+  font-size: clamp(0.94rem, 1.6vw, 1.05rem);
+  font-weight: 500;
 }
 
-.options {
-  display: grid;
-  width: 100%;
-  max-width: 58rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
-  margin-top: 2rem;
-}
-
-.optionCard {
+.mainAction {
+  position: relative;
   display: flex;
-  min-height: 13.5rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  border-radius: 20px;
-  padding: 1.25rem 1.3rem;
-  color: #fff;
-  text-decoration: none;
-  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.optionPrivate {
-  border: 1px solid #315f86;
-  background: #102a43;
-  color: #fff;
-}
-
-.optionBrowse {
-  border: 1px solid #ffd477;
-  background: var(--gold);
-  color: var(--ink);
-}
-
-.optionCard:hover {
-  transform: translateY(-3px);
-}
-
-.optionPrivate:hover {
-  border-color: #78a8ce;
-  background: #163b5c;
-}
-
-.optionBrowse:hover {
-  background: #ffca5c;
-}
-
-.optionCard:focus-visible {
-  outline: 3px solid #fff;
-  outline-offset: 4px;
-}
-
-.optionCopy {
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-}
-
-.optionCopy strong {
-  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
-  font-weight: 850;
-  line-height: 1.25;
-}
-
-.optionCopy b {
-  margin-top: 0.16rem;
-  font-size: 0.76rem;
-  font-weight: 600;
-  opacity: 0.74;
-}
-
-.optionDescription {
-  display: flex;
-  flex-direction: column;
-  gap: 0.08rem;
-  margin-top: 0.65rem;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  opacity: 0.88;
-}
-
-.optionDescription span:last-child {
-  font-size: 0.8em;
-  opacity: 0.8;
-}
-
-.optionButton {
-  display: inline-flex;
-  min-height: 3.25rem;
+  width: min(100%, 25rem);
+  min-height: 4.5rem;
   align-items: flex-start;
   justify-content: center;
   flex-direction: column;
-  margin-top: 1rem;
-  border-radius: 12px;
-  padding: 0.58rem 1rem;
-  font-size: 0.82rem;
+  margin-top: 2rem;
+  border: 1px solid #ffd77b;
+  border-radius: 16px;
+  background: var(--gold);
+  padding: 0.8rem 4rem 0.8rem 1.25rem;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.35);
+  color: var(--dark-on-gold);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mainAction > span:first-child {
+  font-size: 1.08rem;
   font-weight: 800;
-  line-height: 1.15;
 }
 
-.optionButton small {
-  margin-top: 0.18rem;
-  font-size: 0.72em;
+.mainAction small {
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  opacity: 0.76;
 }
 
-.optionPrivate .optionButton {
-  background: #fff;
-  color: #102a43;
+.mainActionArrow {
+  position: absolute;
+  top: 50%;
+  right: 1.25rem;
+  font-size: 1.5rem;
+  transform: translateY(-50%);
 }
 
-.optionBrowse .optionButton {
-  background: var(--ink);
-  color: #fff;
+.mainAction:hover {
+  background: var(--gold-hover);
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.44);
+  transform: translateY(-2px);
 }
 
-.optionArrow {
+.mainAction:focus-visible,
+.choiceCard:focus-visible,
+.closeButton:focus-visible {
+  outline: 3px solid var(--white);
+  outline-offset: 4px;
+}
+
+.choiceDialog {
+  width: min(calc(100% - 2rem), 62rem);
+  max-width: none;
+  max-height: min(90svh, 48rem);
+  overflow: auto;
+  margin: auto;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: var(--page-navy);
+  padding: 0;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.65);
+  color: var(--white);
+}
+
+.choiceDialog::backdrop {
+  background: rgba(3, 10, 20, 0.82);
+  backdrop-filter: blur(5px);
+}
+
+.choicePanel {
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+}
+
+.choiceHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.choiceHeader h2 {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--white);
+  font-size: clamp(1.65rem, 4vw, 2.55rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.choiceHeader p {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: clamp(0.94rem, 2vw, 1.08rem);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.closeButton {
   display: grid;
-  width: 2.4rem;
-  height: 2.4rem;
-  flex: 0 0 2.4rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 2.75rem;
   place-items: center;
-  border: 1px solid currentColor;
+  border: 1px solid var(--border);
   border-radius: 50%;
-  font-size: 1.2rem;
-  opacity: 0.72;
+  background: var(--surface-navy);
+  color: var(--white);
+  cursor: pointer;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.choiceCard {
+  display: flex;
+  min-height: 19rem;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: clamp(1.25rem, 3vw, 1.7rem);
+  text-decoration: none;
+  transition: transform 180ms ease, background-color 180ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.codeChoice {
+  background: var(--surface-navy);
+  color: var(--white);
+}
+
+.browseChoice {
+  border-color: #ffd77b;
+  background: var(--gold);
+  color: var(--dark-on-gold);
+}
+
+.choiceCard:hover {
+  transform: translateY(-3px);
+}
+
+.codeChoice:hover {
+  background: #123452;
+}
+
+.browseChoice:hover {
+  background: var(--gold-hover);
+}
+
+.choiceCopy {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.choiceCopy strong {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.choiceCopy b {
+  margin-top: 0.3rem;
+  font-size: clamp(0.92rem, 1.8vw, 1.05rem);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.codeChoice .choiceCopy b {
+  color: var(--secondary);
+}
+
+.browseChoice .choiceCopy b {
+  color: #1f2937;
+}
+
+.choiceDescription {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.choiceDescription span:last-child {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.codeChoice .choiceDescription {
+  color: var(--secondary);
+}
+
+.codeChoice .choiceDescription span:last-child {
+  color: var(--muted);
+}
+
+.browseChoice .choiceDescription {
+  color: #1f2937;
+}
+
+.choiceAction {
+  display: flex;
+  width: 100%;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  border-radius: 13px;
+  padding: 0.85rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.codeChoice .choiceAction {
+  background: var(--gold);
+  color: var(--dark-on-gold);
+}
+
+.browseChoice .choiceAction {
+  background: var(--page-navy);
+  color: var(--white);
 }
 
 .stepsSection {
@@ -229,18 +350,18 @@
   padding: clamp(3.5rem, 8vw, 6.5rem) clamp(0rem, 3vw, 2rem) 0;
 }
 
-.sectionHeading p {
-  margin: 0.35rem 0 0;
-  color: var(--gold);
-  font-size: 0.74rem;
-  font-weight: 600;
-}
-
 .sectionHeading h2 {
   margin: 0;
-  color: var(--neutral-on-background-strong);
+  color: var(--white);
   font-size: clamp(1.8rem, 4vw, 3rem);
   letter-spacing: -0.045em;
+}
+
+.sectionHeading p {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .steps {
@@ -259,46 +380,47 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.4rem;
-  border-top: 1px solid rgba(128, 128, 128, 0.3);
+  border-top: 1px solid var(--border);
 }
 
 .steps li:not(:last-child)::after {
   position: absolute;
   top: 2.65rem;
   right: -0.45rem;
-  color: rgba(128, 128, 128, 0.6);
+  color: var(--muted);
   content: "→";
 }
 
 .stepNumber {
   display: grid;
-  width: 2.35rem;
-  height: 2.35rem;
-  flex: 0 0 2.35rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 2.4rem;
   place-items: center;
   border-radius: 50%;
   background: var(--gold);
-  color: var(--ink);
-  font-weight: 850;
+  color: var(--dark-on-gold);
+  font-weight: 800;
 }
 
 .steps li div {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.28rem;
 }
 
 .steps strong {
-  color: var(--neutral-on-background-strong);
+  color: var(--white);
   font-size: 1.04rem;
   line-height: 1.45;
 }
 
 .steps li div > span {
-  color: var(--neutral-on-background-weak);
-  font-size: 0.7rem;
-  line-height: 1.45;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 .help {
@@ -306,9 +428,9 @@
   align-items: flex-start;
   gap: 1.2rem;
   margin: clamp(3rem, 7vw, 5.5rem) clamp(0rem, 3vw, 2rem) 0;
-  border: 1px solid rgba(245, 185, 66, 0.26);
+  border: 1px solid var(--border);
   border-radius: 22px;
-  background: rgba(245, 185, 66, 0.07);
+  background: var(--surface-navy);
   padding: clamp(1.35rem, 4vw, 2.25rem);
 }
 
@@ -320,40 +442,41 @@
   place-items: center;
   border-radius: 50%;
   background: var(--gold);
-  color: var(--ink);
+  color: var(--dark-on-gold);
   font-size: 1.2rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .help h2 {
   display: flex;
   flex-direction: column;
   margin: 0;
-  color: var(--neutral-on-background-strong);
+  color: var(--white);
   font-size: clamp(1.2rem, 3vw, 1.65rem);
   line-height: 1.3;
 }
 
 .help h2 small {
-  margin-top: 0.12rem;
-  color: var(--neutral-on-background-weak);
-  font-size: 0.5em;
+  margin-top: 0.25rem;
+  color: var(--secondary);
+  font-size: 0.62em;
   font-weight: 600;
 }
 
 .help p {
   display: flex;
   flex-direction: column;
-  gap: 0.12rem;
-  margin: 0.7rem 0 0;
-  color: var(--neutral-on-background-weak);
-  font-size: 0.92rem;
+  gap: 0.25rem;
+  margin: 0.8rem 0 0;
+  color: var(--secondary);
+  font-size: 0.96rem;
   line-height: 1.55;
 }
 
 .help p span:last-child {
-  font-size: 0.74em;
-  opacity: 0.8;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 500;
 }
 
 @keyframes photoFade {
@@ -376,56 +499,94 @@
     object-position: 58% center;
   }
 
-  .heroOverlay {
-    background:
-      linear-gradient(0deg, rgba(7, 8, 6, 0.96) 0%, rgba(7, 8, 6, 0.67) 61%, rgba(7, 8, 6, 0.3) 100%);
-  }
-
   .heroContent {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 2rem 1rem 1rem;
+    padding: 2rem 1rem 1.2rem;
   }
 
   .brand {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.8rem;
   }
 
   .hero h1 {
-    font-size: clamp(2rem, 9vw, 3.25rem);
+    font-size: clamp(2.4rem, 11vw, 3rem);
+  }
+
+  .hero h1 small {
+    margin-top: 0.45rem;
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
   }
 
   .supportingText {
-    margin-top: 0.75rem;
-    font-size: 0.84rem;
+    margin-top: 0.9rem;
+    font-size: 1rem;
   }
 
-  .options {
+  .supportingText span:last-child {
+    font-size: 0.88rem;
+  }
+
+  .mainAction {
+    width: 100%;
+    min-height: 4.25rem;
+    margin-top: 1.4rem;
+  }
+
+  .choiceDialog {
+    width: 100%;
+    max-height: 92svh;
+    margin: auto 0 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .choicePanel {
+    padding: 1.1rem 0.9rem calc(1.1rem + env(safe-area-inset-bottom));
+  }
+
+  .choiceHeader {
+    gap: 0.75rem;
+  }
+
+  .choiceHeader h2 {
+    font-size: 1.55rem;
+  }
+
+  .choiceHeader p {
+    font-size: 0.9rem;
+  }
+
+  .choices {
     grid-template-columns: 1fr;
-    gap: 0.65rem;
+    gap: 0.75rem;
     margin-top: 1.25rem;
   }
 
-  .optionCard {
-    min-height: 11.5rem;
-    border-radius: 16px;
-    padding: 0.9rem 1rem;
+  .choiceCard {
+    min-height: 14.5rem;
+    border-radius: 17px;
+    padding: 1.15rem;
   }
 
-  .optionCopy strong {
-    font-size: 1.05rem;
+  .choiceCopy strong {
+    font-size: 1.3rem;
   }
 
-  .optionDescription {
-    margin-top: 0.38rem;
-    font-size: 0.75rem;
+  .choiceCopy b {
+    font-size: 0.92rem;
   }
 
-  .optionButton {
-    min-height: 2.9rem;
-    margin-top: 0.7rem;
-    padding: 0.5rem 0.8rem;
+  .choiceDescription {
+    margin-top: 0.65rem;
+    font-size: 0.9rem;
+  }
+
+  .choiceDescription span:last-child {
+    font-size: 0.82rem;
   }
 
   .stepsSection {
@@ -461,21 +622,24 @@
   }
 
   .hero h1 {
-    font-size: 1.9rem;
+    font-size: 2.3rem;
   }
 
-  .optionCard {
-    min-height: 11rem;
+  .help {
+    gap: 0.8rem;
   }
 
-  .optionDescription {
-    max-width: 17rem;
+  .helpIcon {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-basis: 2.25rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .carouselImage,
-  .optionCard {
+  .mainAction,
+  .choiceCard {
     animation: none;
     transition: none;
   }

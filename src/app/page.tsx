@@ -1,7 +1,7 @@
 import { Meta, Schema } from "@once-ui-system/core";
 import { Noto_Sans_Ethiopic } from "next/font/google";
-import Link from "next/link";
 import { FootballHeroCarousel } from "@/components/home/FootballHeroCarousel";
+import { PhotoFinderDialog } from "@/components/home/PhotoFinderDialog";
 import { about, baseURL, home, person } from "@/resources";
 import styles from "./page.module.css";
 
@@ -20,29 +20,6 @@ export async function generateMetadata() {
     image: home.image,
   });
 }
-
-const photoOptions = [
-  {
-    english: "Private Gallery",
-    amharic: "የግል ፎቶዎች",
-    descriptionEnglish: "Use your personal code to access your photos.",
-    descriptionAmharic: "የተሰጠዎትን ኮድ በመጠቀም ፎቶዎችዎን ይመልከቱ።",
-    buttonEnglish: "Enter Your Code",
-    buttonAmharic: "ኮድዎን ያስገቡ",
-    href: "https://www.flooystudio.com/event-photos",
-    variant: "private",
-  },
-  {
-    english: "Browse All Photos",
-    amharic: "ሁሉንም ፎቶዎች ይመልከቱ",
-    descriptionEnglish: "Browse the full event photo gallery.",
-    descriptionAmharic: "የዝግጅቱን ሙሉ ፎቶ ጋለሪ ይመልከቱ።",
-    buttonEnglish: "Browse Photos",
-    buttonAmharic: "ፎቶዎችን ይመልከቱ",
-    href: "https://gallery.flooystudio.com",
-    variant: "browse",
-  },
-] as const;
 
 const steps = [
   { english: "Find your photos", amharic: "ፎቶዎችዎን ያግኙ" },
@@ -85,31 +62,7 @@ export default function Home() {
             <span lang="am">በዝግጅቱ ላይ የተነሱትን ፎቶዎችዎን በቀላሉ ያግኙ።</span>
           </p>
 
-          <div className={styles.options} aria-label="Photo gallery options">
-            {photoOptions.map((option) => (
-              <Link
-                key={option.href}
-                className={`${styles.optionCard} ${
-                  option.variant === "private" ? styles.optionPrivate : styles.optionBrowse
-                }`}
-                href={option.href}
-              >
-                <span className={styles.optionCopy}>
-                  <strong>{option.english}</strong>
-                  <b lang="am">{option.amharic}</b>
-                  <span className={styles.optionDescription}>
-                    <span>{option.descriptionEnglish}</span>
-                    <span lang="am">{option.descriptionAmharic}</span>
-                  </span>
-                  <span className={styles.optionButton}>
-                    <span>{option.buttonEnglish}</span>
-                    <small lang="am">{option.buttonAmharic}</small>
-                  </span>
-                </span>
-                <span className={styles.optionArrow} aria-hidden="true">→</span>
-              </Link>
-            ))}
-          </div>
+          <PhotoFinderDialog />
         </div>
       </section>
 
