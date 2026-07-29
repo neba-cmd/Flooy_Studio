@@ -1,8 +1,15 @@
-import { Column, Meta, Schema } from "@once-ui-system/core";
-import Image from "next/image";
+import { Meta, Schema } from "@once-ui-system/core";
+import { Noto_Sans_Ethiopic } from "next/font/google";
 import Link from "next/link";
+import { FootballHeroCarousel } from "@/components/home/FootballHeroCarousel";
 import { about, baseURL, home, person } from "@/resources";
 import styles from "./page.module.css";
+
+const ethiopicFont = Noto_Sans_Ethiopic({
+  subsets: ["ethiopic"],
+  weight: ["400", "600", "700", "800"],
+  display: "swap",
+});
 
 export async function generateMetadata() {
   return Meta.generate({
@@ -14,101 +21,118 @@ export async function generateMetadata() {
   });
 }
 
+const photoOptions = [
+  {
+    amharic: "የግል ፎቶዎች",
+    english: "Private Gallery",
+    descriptionAmharic: "የተሰጠዎትን ኮድ በመጠቀም ፎቶዎችዎን ይመልከቱ።",
+    descriptionEnglish: "Use your personal code to access your photos.",
+    href: "https://flooystudio.com/events-photo",
+    variant: "primary",
+  },
+  {
+    amharic: "ሁሉንም ፎቶዎች ይመልከቱ",
+    english: "Browse All Photos",
+    descriptionAmharic: "የዝግጅቱን ሙሉ ፎቶ ጋለሪ ይመልከቱ።",
+    descriptionEnglish: "Browse the full event photo gallery.",
+    href: "https://gallery.flooystudio.com",
+    variant: "secondary",
+  },
+] as const;
+
+const steps = [
+  { amharic: "ፎቶዎችዎን ያግኙ", english: "Find your photos" },
+  { amharic: "የሚወዷቸውን ይምረጡ", english: "Select the photos you like" },
+  { amharic: "ክፍያ ከፈጸሙ በኋላ ያውርዱ", english: "Pay and download your photos" },
+] as const;
+
 export default function Home() {
   return (
-    <>
-      <Column className={styles.home} maxWidth="m" horizontal="center">
-        <Schema
-          as="webPage"
-          baseURL={baseURL}
-          path={home.path}
-          title={home.title}
-          description={home.description}
-          image={`/api/og/generate?title=${encodeURIComponent(home.title)}`}
-          author={{
-            name: person.name,
-            url: `${baseURL}${about.path}`,
-            image: `${baseURL}${person.avatar}`,
-          }}
-        />
+    <main className={`${styles.page} ${ethiopicFont.className}`}>
+      <Schema
+        as="webPage"
+        baseURL={baseURL}
+        path={home.path}
+        title={home.title}
+        description={home.description}
+        image={`/api/og/generate?title=${encodeURIComponent(home.title)}`}
+        author={{
+          name: person.name,
+          url: `${baseURL}${about.path}`,
+          image: `${baseURL}${person.avatar}`,
+        }}
+      />
 
-        <section className={styles.hero}>
-          <p className={styles.eyebrow}>Flooy Studio event photos</p>
-          <h1 className={styles.title}>Your pictures are ready.</h1>
-          <p className={styles.intro}>Use your event code to view and download your photos.</p>
-          <Link href="https://gallery.flooystudio.com" className={styles.primaryCta}>
-            <span>
-              <small>Enter your access code</small>
-              <strong>Get your pictures</strong>
-            </span>
-            <span className={styles.primaryArrow} aria-hidden="true">→</span>
-          </Link>
-        </section>
+      <section className={styles.hero} aria-labelledby="home-heading">
+        <FootballHeroCarousel />
+        <div className={styles.heroOverlay} />
 
-        <section className={styles.eventPhotos} aria-labelledby="event-photos-heading">
-          <div className={styles.eventPhotosBackdrop} aria-hidden="true">
-            <div className={styles.eventPhotoMain}>
-              <Image
-                src="/images/gallery/itally football/DSC00660.jpg"
-                alt=""
-                fill
-                sizes="(max-width: 640px) 100vw, 760px"
-              />
-            </div>
-            <div className={styles.eventPhotoInset}>
-              <Image
-                src="/images/homepage-event-inset.jpg"
-                alt=""
-                fill
-                sizes="(max-width: 640px) 40vw, 260px"
-              />
-            </div>
+        <div className={styles.heroContent}>
+          <p className={styles.brand}>FLOOY STUDIO</p>
+          <h1 id="home-heading">
+            <span lang="am">የእርስዎን ፎቶዎች ያግኙ</span>
+            <small>Find Your Photos</small>
+          </h1>
+          <p className={styles.supportingText}>
+            <span lang="am">በዝግጅቱ ላይ የተነሱትን ፎቶዎችዎን በቀላሉ ያግኙ።</span>
+            <span>Quickly find your photos from the event.</span>
+          </p>
+
+          <div className={styles.options} aria-label="Photo gallery options">
+            {photoOptions.map((option) => (
+              <Link
+                key={option.href}
+                className={`${styles.optionCard} ${
+                  option.variant === "primary" ? styles.optionPrimary : styles.optionSecondary
+                }`}
+                href={option.href}
+              >
+                <span className={styles.optionCopy}>
+                  <strong lang="am">{option.amharic}</strong>
+                  <b>{option.english}</b>
+                  <span className={styles.optionDescription}>
+                    <span lang="am">{option.descriptionAmharic}</span>
+                    <span>{option.descriptionEnglish}</span>
+                  </span>
+                </span>
+                <span className={styles.optionArrow} aria-hidden="true">→</span>
+              </Link>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <div className={styles.eventPhotosContent}>
-            <p className={styles.eventPhotosLabel}>Event photos</p>
-            <h2 id="event-photos-heading">Get Your Pictures</h2>
-            <p className={styles.eventPhotosText}>
-              Find and download your photos from the latest Flooy Studio events.
-            </p>
-            <Link href="https://gallery.flooystudio.com" className={styles.eventPhotosButton}>
-              <span>View Your Photos</span>
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-        </section>
+      <section className={styles.stepsSection} aria-labelledby="steps-heading">
+        <div className={styles.sectionHeading}>
+          <p lang="am">ቀላል እና ፈጣን</p>
+          <h2 id="steps-heading">Three simple steps</h2>
+        </div>
+        <ol className={styles.steps}>
+          {steps.map((step, index) => (
+            <li key={step.english}>
+              <span className={styles.stepNumber}>{index + 1}</span>
+              <div>
+                <strong lang="am">{step.amharic}</strong>
+                <span>{step.english}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-        <section className={styles.videoSection} aria-labelledby="showreel-heading">
-          <div className={styles.videoHeading}>
-            <p>Our work</p>
-            <h2 id="showreel-heading">Watch the showreel</h2>
-          </div>
-          <div className={styles.videoFrame}>
-            <iframe
-              src="https://www.youtube-nocookie.com/embed/I5PrisDzEJQ?rel=0"
-              title="Flooy Studio showreel"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-        </section>
-
-        <nav className={styles.simpleLinks} aria-label="More from Flooy Studio">
-          <Link href="/work">View all work</Link>
-          <Link href="/about">About the studio</Link>
-        </nav>
-      </Column>
-
-      <div className={styles.mobileCtaBar}>
-        <Link href="https://gallery.flooystudio.com" className={styles.mobilePhotoCta}>
-          <span>
-            <small>Have an event code?</small>
-            <strong>Get your pictures</strong>
-          </span>
-          <span className={styles.arrow} aria-hidden="true">→</span>
-        </Link>
-      </div>
-    </>
+      <section className={styles.help} aria-labelledby="help-heading">
+        <span className={styles.helpIcon} aria-hidden="true">?</span>
+        <div>
+          <h2 id="help-heading">
+            <span lang="am">ፎቶዎን ማግኘት አልቻሉም?</span>
+            <small>Can&apos;t find your photo?</small>
+          </h2>
+          <p>
+            <span lang="am">ወደ ፎቶ ካውንተሩ ይምጡ። ቡድናችን ይረዳዎታል።</span>
+            <span>Visit the photo counter and our team will help you.</span>
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }

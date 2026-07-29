@@ -1,464 +1,439 @@
-.home {
+.page {
+  --gold: #f5b942;
+  --ink: #100d08;
   width: 100%;
-  padding: clamp(2.5rem, 7vw, 5.5rem) 1.25rem 4rem;
+  max-width: 76rem;
+  overflow: clip;
+  padding-bottom: clamp(2rem, 6vw, 4.5rem);
 }
 
 .hero {
+  position: relative;
+  isolation: isolate;
   display: flex;
   width: 100%;
+  min-height: min(49rem, calc(100svh - 6rem));
+  overflow: hidden;
+  align-items: flex-end;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 30px;
+  background: #10130e;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
+}
+
+.carousel,
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+.carousel {
+  z-index: -2;
+}
+
+.carouselImage {
+  object-fit: cover;
+  object-position: center;
+  animation: photoFade 900ms ease both;
+}
+
+.heroOverlay {
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(7, 8, 6, 0.89) 0%, rgba(7, 8, 6, 0.62) 52%, rgba(7, 8, 6, 0.25) 100%),
+    linear-gradient(0deg, rgba(7, 8, 6, 0.92) 0%, transparent 66%);
+}
+
+.heroContent {
+  width: min(100%, 67rem);
+  padding: clamp(2rem, 6vw, 5rem);
+}
+
+.brand {
+  margin: 0 0 1.2rem;
+  color: var(--gold);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+}
+
+.hero h1 {
+  display: flex;
   max-width: 46rem;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.eyebrow {
-  margin: 0 0 0.8rem;
-  color: #f5b942;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.title {
-  max-width: 40rem;
   margin: 0;
-  color: #fafafa;
-  font-size: clamp(2.35rem, 8vw, 5rem);
-  font-weight: 720;
-  letter-spacing: -0.055em;
-  line-height: 0.98;
+  color: #fff;
+  font-size: clamp(2.25rem, 6vw, 4.8rem);
+  font-weight: 850;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  text-wrap: balance;
 }
 
-.intro {
-  max-width: 30rem;
-  margin: 1.1rem 0 0;
-  color: #aaa;
-  font-size: clamp(0.95rem, 2vw, 1.1rem);
-  line-height: 1.5;
+.hero h1 small {
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.43em;
+  font-weight: 650;
+  letter-spacing: -0.025em;
 }
 
-.primaryCta {
+.supportingText {
   display: flex;
-  width: min(100%, 31rem);
-  min-height: 6.2rem;
+  max-width: 38rem;
+  flex-direction: column;
+  gap: 0.22rem;
+  margin: 1.15rem 0 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(0.92rem, 2vw, 1.08rem);
+  line-height: 1.55;
+}
+
+.supportingText span:last-child {
+  color: rgba(255, 255, 255, 0.63);
+  font-size: 0.9em;
+}
+
+.options {
+  display: grid;
+  width: 100%;
+  max-width: 58rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.optionCard {
+  display: flex;
+  min-height: 9.5rem;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 22px;
-  background: #f5b942;
-  padding: 1rem 1.3rem 1rem 1.5rem;
-  box-shadow:
-    0 18px 55px rgba(0, 0, 0, 0.42),
-    0 0 38px rgba(245, 185, 66, 0.18);
-  color: #171006;
-  text-align: left;
+  gap: 1rem;
+  border-radius: 20px;
+  padding: 1.25rem 1.3rem;
+  color: #fff;
   text-decoration: none;
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.primaryCta:hover {
-  box-shadow:
-    0 22px 65px rgba(0, 0, 0, 0.48),
-    0 0 45px rgba(245, 185, 66, 0.25);
-  transform: translateY(-2px);
+.optionPrimary {
+  border: 1px solid #ffd477;
+  background: var(--gold);
+  color: var(--ink);
 }
 
-.primaryCta:focus-visible,
-.eventPhotosButton:focus-visible,
-.mobilePhotoCta:focus-visible,
-.simpleLinks a:focus-visible {
+.optionSecondary {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background: rgba(10, 10, 8, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.optionCard:hover {
+  transform: translateY(-3px);
+}
+
+.optionSecondary:hover {
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(24, 23, 19, 0.9);
+}
+
+.optionCard:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 4px;
 }
 
-.primaryCta span:first-child {
+.optionCopy {
   display: flex;
   flex-direction: column;
 }
 
-.primaryCta small {
-  margin-bottom: 0.25rem;
-  font-size: 0.74rem;
-  font-weight: 650;
-  opacity: 0.68;
-}
-
-.primaryCta strong {
-  font-size: clamp(1.35rem, 4vw, 1.8rem);
+.optionCopy strong {
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
   font-weight: 850;
-  letter-spacing: -0.025em;
+  line-height: 1.25;
 }
 
-.primaryArrow {
-  font-size: 2rem;
+.optionCopy b {
+  margin-top: 0.08rem;
+  font-size: 0.86rem;
+  font-weight: 750;
+  opacity: 0.72;
 }
 
-.eventPhotos {
-  position: relative;
-  isolation: isolate;
+.optionDescription {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  margin-top: 0.65rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  opacity: 0.76;
+}
+
+.optionDescription span:last-child {
+  font-size: 0.9em;
+}
+
+.optionArrow {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 2.4rem;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  opacity: 0.72;
+}
+
+.stepsSection {
   width: 100%;
-  min-height: clamp(31rem, 65vw, 42rem);
-  overflow: hidden;
-  margin-top: clamp(3rem, 8vw, 5.5rem);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 28px;
-  background: #111;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+  padding: clamp(3.5rem, 8vw, 6.5rem) clamp(0rem, 3vw, 2rem) 0;
 }
 
-.eventPhotos::after {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(6, 6, 6, 0.97) 0%, rgba(6, 6, 6, 0.78) 44%, rgba(6, 6, 6, 0.18) 78%),
-    linear-gradient(0deg, rgba(6, 6, 6, 0.62), transparent 55%);
-  content: "";
+.sectionHeading p {
+  margin: 0 0 0.3rem;
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 750;
 }
 
-.eventPhotosBackdrop {
-  position: absolute;
-  z-index: -2;
-  inset: 0;
-}
-
-.eventPhotoMain,
-.eventPhotoInset {
-  position: absolute;
-  overflow: hidden;
-}
-
-.eventPhotoMain {
-  inset: 0;
-}
-
-.eventPhotoMain img,
-.eventPhotoInset img {
-  object-fit: cover;
-}
-
-.eventPhotoMain img {
-  object-position: 62% center;
-  filter: saturate(0.82) contrast(1.04);
-}
-
-.eventPhotoInset {
-  right: clamp(1.25rem, 4vw, 2.5rem);
-  bottom: clamp(1.25rem, 4vw, 2.5rem);
-  width: clamp(8rem, 25vw, 13rem);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 16px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
-  aspect-ratio: 4 / 5;
-  transform: rotate(2.5deg);
-}
-
-.eventPhotoInset img {
-  object-position: center 34%;
-}
-
-.eventPhotosContent {
-  display: flex;
-  width: min(100%, 32rem);
-  min-height: inherit;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  padding: clamp(2rem, 7vw, 4.5rem);
-}
-
-.eventPhotosLabel {
-  margin: 0 0 0.9rem;
-  color: #f5b942;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.eventPhotosContent h2 {
-  max-width: 9ch;
+.sectionHeading h2 {
   margin: 0;
-  color: #fff;
-  font-size: clamp(3rem, 8vw, 5.3rem);
-  font-weight: 850;
-  letter-spacing: -0.06em;
-  line-height: 0.92;
-  text-wrap: balance;
+  color: var(--neutral-on-background-strong);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  letter-spacing: -0.045em;
 }
 
-.eventPhotosText {
-  max-width: 27rem;
-  margin: 1.4rem 0 0;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: clamp(1rem, 2vw, 1.15rem);
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.4rem;
+  border-top: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.steps li:not(:last-child)::after {
+  position: absolute;
+  top: 2.65rem;
+  right: -0.45rem;
+  color: rgba(128, 128, 128, 0.6);
+  content: "→";
+}
+
+.stepNumber {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 2.35rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  font-weight: 850;
+}
+
+.steps li div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.steps strong {
+  color: var(--neutral-on-background-strong);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.steps li div > span {
+  color: var(--neutral-on-background-weak);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.help {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  margin: clamp(3rem, 7vw, 5.5rem) clamp(0rem, 3vw, 2rem) 0;
+  border: 1px solid rgba(245, 185, 66, 0.26);
+  border-radius: 22px;
+  background: rgba(245, 185, 66, 0.07);
+  padding: clamp(1.35rem, 4vw, 2.25rem);
+}
+
+.helpIcon {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: 0 0 2.6rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.help h2 {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  color: var(--neutral-on-background-strong);
+  font-size: clamp(1.2rem, 3vw, 1.65rem);
+  line-height: 1.3;
+}
+
+.help h2 small {
+  margin-top: 0.12rem;
+  color: var(--neutral-on-background-weak);
+  font-size: 0.58em;
+  font-weight: 650;
+}
+
+.help p {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  margin: 0.7rem 0 0;
+  color: var(--neutral-on-background-weak);
+  font-size: 0.92rem;
   line-height: 1.55;
 }
 
-.eventPhotosButton {
-  display: inline-flex;
-  min-height: 3.7rem;
-  align-items: center;
-  justify-content: center;
-  gap: 1.3rem;
-  margin-top: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  background: #f5b942;
-  padding: 0.85rem 1.1rem 0.85rem 1.5rem;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
-  color: #171006;
-  font-size: 0.92rem;
-  font-weight: 800;
-  text-decoration: none;
-  transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    box-shadow 180ms ease;
+.help p span:last-child {
+  font-size: 0.82em;
+  opacity: 0.8;
 }
 
-.eventPhotosButton span:last-child {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(23, 16, 6, 0.12);
-  font-size: 1.15rem;
-  transition: transform 180ms ease;
+@keyframes photoFade {
+  from { opacity: 0; transform: scale(1.015); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.eventPhotosButton:hover {
-  background: #ffca60;
-  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.45);
-  transform: translateY(-3px);
-}
-
-.eventPhotosButton:hover span:last-child {
-  transform: translateX(3px);
-}
-
-.videoSection {
-  width: 100%;
-  margin-top: clamp(3rem, 8vw, 5.5rem);
-}
-
-.videoHeading {
-  margin-bottom: 0.85rem;
-}
-
-.videoHeading p {
-  margin: 0 0 0.2rem;
-  color: #777;
-  font-size: 0.68rem;
-  font-weight: 750;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.videoHeading h2 {
-  margin: 0;
-  color: #eee;
-  font-size: clamp(1.2rem, 3vw, 1.65rem);
-  font-weight: 650;
-  letter-spacing: -0.025em;
-}
-
-.videoFrame {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border: 1px solid #272727;
-  border-radius: 18px;
-  background: #111;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
-  aspect-ratio: 16 / 9;
-}
-
-.videoFrame iframe {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  inset: 0;
-}
-
-.simpleLinks {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  padding-top: 1.5rem;
-}
-
-.simpleLinks a {
-  color: #999;
-  font-size: 0.78rem;
-  text-decoration: none;
-}
-
-.simpleLinks a:hover {
-  color: #f5b942;
-}
-
-.mobileCtaBar {
-  display: none;
-}
-
-@media (max-width: 640px) {
-  .home {
-    padding-top: 2.4rem;
-    padding-bottom: 7rem;
+@media (max-width: 720px) {
+  .page {
+    padding-bottom: 1rem;
   }
 
   .hero {
+    min-height: calc(100svh - 5.5rem);
     align-items: stretch;
-    text-align: left;
+    border-radius: 22px;
   }
 
-  .title {
-    max-width: 20rem;
+  .carouselImage {
+    object-position: 58% center;
   }
 
-  .intro {
-    max-width: 21rem;
-  }
-
-  .primaryCta {
-    min-height: 5.5rem;
-    border-radius: 18px;
-    padding-inline: 1.1rem;
-  }
-
-  .eventPhotos {
-    min-height: 39rem;
-    margin-top: 2.75rem;
-    border-radius: 20px;
-  }
-
-  .eventPhotos::after {
+  .heroOverlay {
     background:
-      linear-gradient(0deg, rgba(6, 6, 6, 0.98) 0%, rgba(6, 6, 6, 0.86) 46%, rgba(6, 6, 6, 0.12) 82%),
-      linear-gradient(90deg, rgba(6, 6, 6, 0.35), transparent);
+      linear-gradient(0deg, rgba(7, 8, 6, 0.96) 0%, rgba(7, 8, 6, 0.67) 61%, rgba(7, 8, 6, 0.3) 100%);
   }
 
-  .eventPhotoMain {
-    bottom: 8rem;
-  }
-
-  .eventPhotoMain img {
-    object-position: 65% center;
-  }
-
-  .eventPhotoInset {
-    top: 1rem;
-    right: 1rem;
-    bottom: auto;
-    width: 7.5rem;
-    border-radius: 12px;
-  }
-
-  .eventPhotosContent {
-    justify-content: flex-end;
-    padding: 2rem 1.35rem;
-  }
-
-  .eventPhotosContent h2 {
-    font-size: clamp(2.8rem, 14vw, 4rem);
-  }
-
-  .eventPhotosText {
-    max-width: 20rem;
-    margin-top: 1rem;
-  }
-
-  .eventPhotosButton {
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 1.4rem;
-  }
-
-  .videoSection {
-    margin-top: 3.25rem;
-  }
-
-  .videoFrame {
-    border-radius: 13px;
-  }
-
-  .mobileCtaBar {
-    position: fixed;
-    z-index: 1000;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: block;
-    padding: 0.65rem 0.75rem calc(0.65rem + env(safe-area-inset-bottom));
-    background: linear-gradient(to top, #080808 70%, rgba(8, 8, 8, 0));
-    pointer-events: none;
-  }
-
-  .mobilePhotoCta {
-    display: flex;
-    width: 100%;
-    min-height: 4rem;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 16px;
-    background: #f5b942;
-    padding: 0.55rem 1rem;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
-    color: #161006;
-    text-decoration: none;
-    pointer-events: auto;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .mobilePhotoCta span:first-child {
+  .heroContent {
     display: flex;
     flex-direction: column;
-    line-height: 1.15;
+    justify-content: flex-end;
+    padding: 2rem 1rem 1rem;
   }
 
-  .mobilePhotoCta small {
-    margin-bottom: 0.18rem;
-    font-size: 0.68rem;
-    font-weight: 650;
-    opacity: 0.7;
+  .brand {
+    margin-bottom: 0.75rem;
   }
 
-  .mobilePhotoCta strong {
-    font-size: 1rem;
-    font-weight: 850;
+  .hero h1 {
+    font-size: clamp(2rem, 9vw, 3.25rem);
   }
 
-  .arrow {
-    font-size: 1.45rem;
+  .supportingText {
+    margin-top: 0.75rem;
+    font-size: 0.84rem;
+  }
+
+  .options {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    margin-top: 1.25rem;
+  }
+
+  .optionCard {
+    min-height: 7.4rem;
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+  }
+
+  .optionCopy strong {
+    font-size: 1.05rem;
+  }
+
+  .optionDescription {
+    margin-top: 0.38rem;
+    font-size: 0.69rem;
+  }
+
+  .stepsSection {
+    padding-top: 3.5rem;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    margin-top: 1.3rem;
+  }
+
+  .steps li {
+    padding: 1.1rem 0.25rem;
+  }
+
+  .steps li:not(:last-child)::after {
+    top: auto;
+    right: auto;
+    bottom: -0.55rem;
+    left: 1rem;
+    content: "↓";
+  }
+
+  .help {
+    margin-top: 3rem;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 390px) {
+  .heroContent {
+    padding-inline: 0.8rem;
+  }
+
+  .hero h1 {
+    font-size: 1.9rem;
+  }
+
+  .optionCard {
+    min-height: 6.9rem;
+  }
+
+  .optionDescription {
+    max-width: 17rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .primaryCta,
-  .eventPhotosButton,
-  .eventPhotosButton span:last-child {
+  .carouselImage,
+  .optionCard {
+    animation: none;
     transition: none;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) and (max-width: 640px) {
-  .mobileCtaBar {
-    animation: ctaEnter 450ms 200ms both ease-out;
-  }
-
-  @keyframes ctaEnter {
-    from {
-      opacity: 0;
-      transform: translateY(1rem);
-    }
   }
 }
