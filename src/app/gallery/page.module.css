@@ -1,0 +1,68 @@
+.codeCta {
+  width: 100%;
+  margin-top: clamp(2.5rem, 7vw, 5rem);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background: #10253d;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #f5b942;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.codeCta h2 {
+  margin: 0.55rem 0 0;
+  color: #fff;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  letter-spacing: -0.04em;
+}
+
+.codeCta > p:not(.eyebrow) {
+  max-width: 34rem;
+  margin: 0.8rem auto 0;
+  color: #d1d5db;
+  line-height: 1.6;
+}
+
+.codeButton {
+  display: inline-flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  border-radius: 14px;
+  background: #f5b942;
+  padding: 0.85rem 1.35rem;
+  color: #111827;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.codeButton:hover {
+  background: #e4a52a;
+  transform: translateY(-1px);
+}
+
+.codeButton:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .codeCta {
+    border-radius: 18px;
+  }
+
+  .codeButton {
+    width: 100%;
+  }
+}
