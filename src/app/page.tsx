@@ -23,27 +23,34 @@ export async function generateMetadata() {
 
 const photoOptions = [
   {
-    amharic: "የግል ፎቶዎች",
     english: "Private Gallery",
-    descriptionAmharic: "የተሰጠዎትን ኮድ በመጠቀም ፎቶዎችዎን ይመልከቱ።",
+    amharic: "የግል ፎቶዎች",
     descriptionEnglish: "Use your personal code to access your photos.",
-    href: "https://flooystudio.com/events-photo",
-    variant: "primary",
+    descriptionAmharic: "የተሰጠዎትን ኮድ በመጠቀም ፎቶዎችዎን ይመልከቱ።",
+    buttonEnglish: "Enter Your Code",
+    buttonAmharic: "ኮድዎን ያስገቡ",
+    href: "https://www.flooystudio.com/event-photos",
+    variant: "private",
   },
   {
-    amharic: "ሁሉንም ፎቶዎች ይመልከቱ",
     english: "Browse All Photos",
-    descriptionAmharic: "የዝግጅቱን ሙሉ ፎቶ ጋለሪ ይመልከቱ።",
+    amharic: "ሁሉንም ፎቶዎች ይመልከቱ",
     descriptionEnglish: "Browse the full event photo gallery.",
+    descriptionAmharic: "የዝግጅቱን ሙሉ ፎቶ ጋለሪ ይመልከቱ።",
+    buttonEnglish: "Browse Photos",
+    buttonAmharic: "ፎቶዎችን ይመልከቱ",
     href: "https://gallery.flooystudio.com",
-    variant: "secondary",
+    variant: "browse",
   },
 ] as const;
 
 const steps = [
-  { amharic: "ፎቶዎችዎን ያግኙ", english: "Find your photos" },
-  { amharic: "የሚወዷቸውን ይምረጡ", english: "Select the photos you like" },
-  { amharic: "ክፍያ ከፈጸሙ በኋላ ያውርዱ", english: "Pay and download your photos" },
+  { english: "Find your photos", amharic: "ፎቶዎችዎን ያግኙ" },
+  { english: "Select the photos you like", amharic: "የሚወዷቸውን ይምረጡ" },
+  {
+    english: "Pay and download your photos",
+    amharic: "ክፍያ ከፈጸሙ በኋላ ፎቶዎችዎን ያውርዱ",
+  },
 ] as const;
 
 export default function Home() {
@@ -70,12 +77,12 @@ export default function Home() {
         <div className={styles.heroContent}>
           <p className={styles.brand}>FLOOY STUDIO</p>
           <h1 id="home-heading">
-            <span lang="am">የእርስዎን ፎቶዎች ያግኙ</span>
-            <small>Find Your Photos</small>
+            <span>Find Your Photos</span>
+            <small lang="am">የእርስዎን ፎቶዎች ያግኙ</small>
           </h1>
           <p className={styles.supportingText}>
-            <span lang="am">በዝግጅቱ ላይ የተነሱትን ፎቶዎችዎን በቀላሉ ያግኙ።</span>
             <span>Quickly find your photos from the event.</span>
+            <span lang="am">በዝግጅቱ ላይ የተነሱትን ፎቶዎችዎን በቀላሉ ያግኙ።</span>
           </p>
 
           <div className={styles.options} aria-label="Photo gallery options">
@@ -83,16 +90,20 @@ export default function Home() {
               <Link
                 key={option.href}
                 className={`${styles.optionCard} ${
-                  option.variant === "primary" ? styles.optionPrimary : styles.optionSecondary
+                  option.variant === "private" ? styles.optionPrivate : styles.optionBrowse
                 }`}
                 href={option.href}
               >
                 <span className={styles.optionCopy}>
-                  <strong lang="am">{option.amharic}</strong>
-                  <b>{option.english}</b>
+                  <strong>{option.english}</strong>
+                  <b lang="am">{option.amharic}</b>
                   <span className={styles.optionDescription}>
-                    <span lang="am">{option.descriptionAmharic}</span>
                     <span>{option.descriptionEnglish}</span>
+                    <span lang="am">{option.descriptionAmharic}</span>
+                  </span>
+                  <span className={styles.optionButton}>
+                    <span>{option.buttonEnglish}</span>
+                    <small lang="am">{option.buttonAmharic}</small>
                   </span>
                 </span>
                 <span className={styles.optionArrow} aria-hidden="true">→</span>
@@ -104,16 +115,16 @@ export default function Home() {
 
       <section className={styles.stepsSection} aria-labelledby="steps-heading">
         <div className={styles.sectionHeading}>
-          <p lang="am">ቀላል እና ፈጣን</p>
           <h2 id="steps-heading">Three simple steps</h2>
+          <p lang="am">ቀላል እና ፈጣን</p>
         </div>
         <ol className={styles.steps}>
           {steps.map((step, index) => (
             <li key={step.english}>
               <span className={styles.stepNumber}>{index + 1}</span>
               <div>
-                <strong lang="am">{step.amharic}</strong>
-                <span>{step.english}</span>
+                <strong>{step.english}</strong>
+                <span lang="am">{step.amharic}</span>
               </div>
             </li>
           ))}
@@ -124,12 +135,12 @@ export default function Home() {
         <span className={styles.helpIcon} aria-hidden="true">?</span>
         <div>
           <h2 id="help-heading">
-            <span lang="am">ፎቶዎን ማግኘት አልቻሉም?</span>
-            <small>Can&apos;t find your photo?</small>
+            <span>Can&apos;t find your photo?</span>
+            <small lang="am">ፎቶዎን ማግኘት አልቻሉም?</small>
           </h2>
           <p>
-            <span lang="am">ወደ ፎቶ ካውንተሩ ይምጡ። ቡድናችን ይረዳዎታል።</span>
             <span>Visit the photo counter and our team will help you.</span>
+            <span lang="am">ወደ ፎቶ ካውንተሩ ይምጡ። ቡድናችን ይረዳዎታል።</span>
           </p>
         </div>
       </section>
