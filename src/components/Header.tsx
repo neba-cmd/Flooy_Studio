@@ -46,6 +46,8 @@ export default TimeDisplay;
 export const Header = () => {
   const pathname = usePathname() ?? "";
 
+  if (pathname === "/") return null;
+
   return (
     <>
       <Fade s={{ hide: true }} fillWidth position="fixed" height="80" zIndex={9} />
