@@ -3,7 +3,7 @@ import styles from "@/app/page.module.css";
 
 export function PhotoFinderDialog() {
   return (
-    <Link className={styles.mainAction} href="/gallery">
+    <Link className={styles.mainAction} href="https://gallery.flooystudio.com/">
       <span>Get Your Pictures</span>
       <small lang="am">ፎቶዎችዎን ያግኙ</small>
       <span className={styles.mainActionArrow} aria-hidden="true">→</span>
