@@ -1,13 +1,13 @@
 .page {
-  --page-navy: #07111f;
-  --surface-navy: #0d2742;
-  --gold: #f4b942;
-  --gold-hover: #dfa52e;
-  --white: #fff;
-  --secondary: #e5e7eb;
-  --muted: #cbd5e1;
+  --page-navy: #07131f;
+  --surface-navy: #10253d;
+  --gold: #f5b942;
+  --gold-hover: #e4a52a;
+  --white: #ffffff;
+  --secondary: #d1d5db;
+  --muted: #9ca3af;
   --dark-on-gold: #111827;
-  --border: rgba(255, 255, 255, 0.18);
+  --border: rgba(255, 255, 255, 0.12);
   width: 100%;
   max-width: 76rem;
   overflow: clip;
@@ -50,9 +50,7 @@
 
 .heroOverlay {
   z-index: -1;
-  background:
-    linear-gradient(to bottom, rgba(3, 10, 20, 0.35), rgba(3, 10, 20, 0.88)),
-    rgba(3, 10, 20, 0.68);
+  background: rgba(7, 19, 31, 0.8);
 }
 
 .heroContent {
@@ -84,7 +82,7 @@
 
 .hero h1 small {
   margin-top: 0.55rem;
-  color: var(--secondary);
+  color: var(--white);
   font-size: clamp(1.35rem, 2.8vw, 1.8rem);
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -103,7 +101,7 @@
 }
 
 .supportingText span:last-child {
-  color: var(--muted);
+  color: var(--secondary);
   font-size: clamp(0.94rem, 1.6vw, 1.05rem);
   font-weight: 500;
 }
@@ -117,7 +115,7 @@
   justify-content: center;
   flex-direction: column;
   margin-top: 2rem;
-  border: 1px solid #ffd77b;
+  border: 0;
   border-radius: 16px;
   background: var(--gold);
   padding: 0.8rem 4rem 0.8rem 1.25rem;
@@ -126,7 +124,7 @@
   cursor: pointer;
   font: inherit;
   text-align: left;
-  transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  transition: background-color 180ms ease, box-shadow 180ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -152,14 +150,15 @@
 .mainAction:hover {
   background: var(--gold-hover);
   box-shadow: 0 20px 52px rgba(0, 0, 0, 0.44);
-  transform: translateY(-2px);
 }
 
 .mainAction:focus-visible,
 .choiceCard:focus-visible,
 .closeButton:focus-visible {
-  outline: 3px solid var(--white);
-  outline-offset: 4px;
+  outline: 0;
+  box-shadow:
+    0 0 0 3px var(--page-navy),
+    0 0 0 6px var(--white);
 }
 
 .choiceDialog {
@@ -205,7 +204,7 @@
 
 .choiceHeader p {
   margin: 0.55rem 0 0;
-  color: var(--muted);
+  color: var(--white);
   font-size: clamp(0.94rem, 2vw, 1.08rem);
   font-weight: 600;
   line-height: 1.5;
@@ -217,7 +216,7 @@
   height: 2.75rem;
   flex: 0 0 2.75rem;
   place-items: center;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: 50%;
   background: var(--surface-navy);
   color: var(--white);
@@ -240,7 +239,7 @@
   border-radius: 20px;
   padding: clamp(1.25rem, 3vw, 1.7rem);
   text-decoration: none;
-  transition: transform 180ms ease, background-color 180ms ease;
+  transition: background-color 180ms ease, box-shadow 180ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -250,17 +249,13 @@
 }
 
 .browseChoice {
-  border-color: #ffd77b;
+  border-color: var(--gold);
   background: var(--gold);
   color: var(--dark-on-gold);
 }
 
-.choiceCard:hover {
-  transform: translateY(-3px);
-}
-
 .codeChoice:hover {
-  background: #123452;
+  box-shadow: inset 0 0 0 1px var(--secondary);
 }
 
 .browseChoice:hover {
@@ -280,6 +275,14 @@
   line-height: 1.2;
 }
 
+.codeChoice .choiceCopy strong {
+  color: var(--white);
+}
+
+.browseChoice .choiceCopy strong {
+  color: var(--dark-on-gold);
+}
+
 .choiceCopy b {
   margin-top: 0.3rem;
   font-size: clamp(0.92rem, 1.8vw, 1.05rem);
@@ -288,11 +291,11 @@
 }
 
 .codeChoice .choiceCopy b {
-  color: var(--secondary);
+  color: var(--white);
 }
 
 .browseChoice .choiceCopy b {
-  color: #1f2937;
+  color: var(--dark-on-gold);
 }
 
 .choiceDescription {
@@ -306,7 +309,7 @@
 
 .choiceDescription span:last-child {
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .codeChoice .choiceDescription {
@@ -314,11 +317,15 @@
 }
 
 .codeChoice .choiceDescription span:last-child {
-  color: var(--muted);
+  color: var(--secondary);
 }
 
 .browseChoice .choiceDescription {
-  color: #1f2937;
+  color: #374151;
+}
+
+.browseChoice .choiceDescription span:last-child {
+  color: #374151;
 }
 
 .choiceAction {
@@ -345,6 +352,10 @@
   color: var(--white);
 }
 
+.choiceAction span {
+  color: inherit;
+}
+
 .stepsSection {
   width: 100%;
   padding: clamp(3.5rem, 8vw, 6.5rem) clamp(0rem, 3vw, 2rem) 0;
@@ -359,7 +370,7 @@
 
 .sectionHeading p {
   margin: 0.4rem 0 0;
-  color: var(--muted);
+  color: var(--white);
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -417,7 +428,7 @@
 }
 
 .steps li div > span {
-  color: var(--muted);
+  color: var(--secondary);
   font-size: 0.82rem;
   font-weight: 500;
   line-height: 1.5;
@@ -458,7 +469,7 @@
 
 .help h2 small {
   margin-top: 0.25rem;
-  color: var(--secondary);
+  color: var(--white);
   font-size: 0.62em;
   font-weight: 600;
 }
@@ -474,7 +485,7 @@
 }
 
 .help p span:last-child {
-  color: var(--muted);
+  color: var(--secondary);
   font-size: 0.84rem;
   font-weight: 500;
 }
