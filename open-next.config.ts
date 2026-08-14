@@ -3,7 +3,7 @@ export default {
     override: {
       wrapper: "cloudflare-node",
       converter: "edge",
-      proxyExternalRequest: true,
+      proxyExternalRequest: "fetch",
     },
   },
   build: {
@@ -17,4 +17,3 @@ export default {
     },
   },
 };
-
