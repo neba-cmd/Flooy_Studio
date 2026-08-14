@@ -1,5 +1,3 @@
-import { defineMinifyConfig } from "@opennextjs/cloudflare";
-
 export default {
   default: {
     override: {
@@ -19,3 +17,4 @@ export default {
     },
   },
 };
+
