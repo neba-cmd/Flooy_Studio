@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm test",
-    "preflight": "node --env-file=.env.local scripts/production-preflight.mjs"
+    "preflight": "node --env-file=.env.local scripts/production-preflight.mjs",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.0",
