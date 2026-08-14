@@ -1,3 +1,5 @@
+import { defineMinifyConfig } from "@opennextjs/cloudflare";
+/** @type {import('@opennextjs/aws/types/open-next.js').OpenNextConfig} */
 const config = {
   default: {
     override: {
@@ -6,7 +8,7 @@ const config = {
       proxyExternalRequest: true,
     },
   },
-  buildOptions: {
+  build: {
     esbuild: {
       loader: {
         ".woff2": "file",
@@ -18,4 +20,4 @@ const config = {
   },
 };
 
-module.exports = config;
+export default config;
