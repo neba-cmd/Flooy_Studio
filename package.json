@@ -1,10 +1,13 @@
 {
   "name": "@once-ui-system/magic-portfolio",
   "version": "2.3.0",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "export": "next export",
-    "build": "next build",
+    "build": "next build --webpack",
     "biome-write": "npx @biomejs/biome format --write .",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",

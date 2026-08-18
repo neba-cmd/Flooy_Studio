@@ -1,4 +1,5 @@
 import mdx from "@next/mdx";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +12,7 @@ const withMDX = mdx({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   poweredByHeader: false,
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   transpilePackages: ["next-mdx-remote"],
@@ -61,3 +63,6 @@ const nextConfig = {
 };
 
 export default withMDX(nextConfig);
+
+// Enables Cloudflare bindings when using `next dev` locally.
+initOpenNextCloudflareForDev();
