@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import styles from "@/app/page.module.css";
 
 const footballPhotos = [
-  "/images/gallery/itally football/previews/DSC00509.jpg",
-  "/images/gallery/itally football/previews/DSC00519.jpg",
-  "/images/gallery/itally football/previews/DSC00866.jpg",
-  "/images/gallery/itally football/previews/DSC01154.jpg",
-  "/images/gallery/itally football/previews/DSC01280.jpg",
-  "/images/gallery/itally football/previews/DSC01332.jpg",
+  "/images/gallery/itally football/DSC00509-watermarked.jpg",
+  "/images/gallery/itally football/DSC00519-watermarked.jpg",
+  "/images/gallery/itally football/DSC00866-watermarked.jpg",
+  "/images/gallery/itally football/DSC01154-watermarked.jpg",
+  "/images/gallery/itally football/DSC01280-watermarked.jpg",
+  "/images/gallery/itally football/DSC01332-watermarked.jpg",
 ];
 
 export function FootballHeroCarousel() {
