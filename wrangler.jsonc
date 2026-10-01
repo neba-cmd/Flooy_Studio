@@ -2,6 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "flooy-studio",
   "main": ".open-next/worker.js",
+  // Keep the generated Worker as small as possible before Cloudflare measures
+  // its compressed upload size.
+  "minify": true,
   "compatibility_date": "2026-07-31",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
